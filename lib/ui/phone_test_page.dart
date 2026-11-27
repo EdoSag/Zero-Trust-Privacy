@@ -322,10 +322,17 @@ class _PhoneTestPageState extends State<PhoneTestPage>
   }
 
   Widget _sendStep(AppL10n l10n) {
+    // Steps 2 and 3 are optional; 4 and 5 are easy to pass over, and a
+    // summary without them leaves two of the questions open.
+    final missing = stepsNotRun(
+      _controller.results,
+    ).where((step) => step == 4 || step == 5).toList();
     return _StepCard(
       title: l10n.stepSendTitle,
       body: l10n.stepSendBody,
       children: [
+        if (_controller.hasApps && missing.isNotEmpty)
+          _ErrorText(l10n.stepsMissing(missing.join(', '))),
         _Buttons([
           FilledButton(
             key: const Key('share-summary'),

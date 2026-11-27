@@ -3,27 +3,78 @@
   "appTitle": "ZT Privacy",
   "phoneTestTitle": "Phone test",
   "buildLabel": "Build {build}",
-  "@buildLabel": {"placeholders": {"build": {"type": "String"}}},
-  "intro": "This build checks what this phone lets ZT Privacy read. Nothing leaves the phone: the app has no network permission. Run the steps, then send the summary.",
+  "@buildLabel": {
+    "placeholders": {
+      "build": {
+        "type": "String"
+      }
+    }
+  },
+  "intro": "This test checks what this phone lets ZT Privacy read. What it reads stays on the phone unless you share it yourself. Run the steps, then send the summary.",
   "stepReadTitle": "1. Read the phone",
   "stepReadBody": "Lists the installed apps with their permissions, who holds special access, and the settings a privacy check looks at.",
   "readButton": "Read the phone",
   "readAgainButton": "Read again",
   "reading": "Reading…",
   "appsLine": "{total} apps, {user} of them yours",
-  "@appsLine": {"placeholders": {"total": {"type": "int"}, "user": {"type": "int"}}},
+  "@appsLine": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      },
+      "user": {
+        "type": "int"
+      }
+    }
+  },
   "settingsLine": "Settings read: {ok} of {total}",
-  "@settingsLine": {"placeholders": {"ok": {"type": "int"}, "total": {"type": "int"}}},
+  "@settingsLine": {
+    "placeholders": {
+      "ok": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "accessListsLine": "Special access lists read: {ok} of {total}",
-  "@accessListsLine": {"placeholders": {"ok": {"type": "int"}, "total": {"type": "int"}}},
+  "@accessListsLine": {
+    "placeholders": {
+      "ok": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "networkOffLine": "Apps with the network switched off: {count}",
-  "@networkOffLine": {"placeholders": {"count": {"type": "int"}}},
+  "@networkOffLine": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "stepFailed": "This step failed: {error}",
-  "@stepFailed": {"placeholders": {"error": {"type": "String"}}},
+  "@stepFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "stepUsageTitle": "2. Usage access (optional)",
   "stepUsageBody": "Shows when each app was last used and how much data it moved. Switch on ZT Privacy in the list, then come back.",
   "usageOn": "Usage access is on. Apps with a last-used time: {count}",
-  "@usageOn": {"placeholders": {"count": {"type": "int"}}},
+  "@usageOn": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "usageOff": "Usage access is off.",
   "openUsageAccess": "Open Usage access",
   "checkAgain": "Check again",
@@ -33,7 +84,13 @@
   "copied": "Copied",
   "deepNotGranted": "Not unlocked yet.",
   "deepGrantedWorks": "Unlocked, and the history can be read: {count} rows.",
-  "@deepGrantedWorks": {"placeholders": {"count": {"type": "int"}}},
+  "@deepGrantedWorks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "deepGrantedBlocked": "Unlocked, but Android still refused the history. The summary has the details.",
   "stepScanTitle": "4. Tracker scan",
   "stepScanBody": "Reads the class names inside each of your apps and looks for well-known tracking and advertising kits. This measures how long a full scan takes.",
@@ -41,11 +98,41 @@
   "startScan": "Start the scan",
   "stopScan": "Stop",
   "scanProgress": "{done} of {total} apps, {seconds} s",
-  "@scanProgress": {"placeholders": {"done": {"type": "int"}, "total": {"type": "int"}, "seconds": {"type": "String"}}},
+  "@scanProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
   "scanDone": "Done: {done} apps in {seconds} s. {withKits} contain at least one kit.",
-  "@scanDone": {"placeholders": {"done": {"type": "int"}, "seconds": {"type": "String"}, "withKits": {"type": "int"}}},
+  "@scanDone": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "String"
+      },
+      "withKits": {
+        "type": "int"
+      }
+    }
+  },
   "scanErrors": "Apps that could not be read: {count}",
-  "@scanErrors": {"placeholders": {"count": {"type": "int"}}},
+  "@scanErrors": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "stepScreensTitle": "5. Android's own screens",
   "stepScreensBody": "Checks which system screens ZT Privacy may open for you. Tap each one, then come back.",
   "screenPrivacyDashboard": "Privacy dashboard",
@@ -60,8 +147,476 @@
   "copySummary": "Copy the summary",
   "saveFull": "Save the full report to Downloads",
   "savedFull": "Saved to Downloads as {name}",
-  "@savedFull": {"placeholders": {"name": {"type": "String"}}},
+  "@savedFull": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "actionFailed": "That did not work: {error}",
-  "@actionFailed": {"placeholders": {"error": {"type": "String"}}},
-  "nothingYet": "Nothing to send yet. Run step 1 first."
+  "@actionFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "stepsMissing": "Not run yet: step {steps}. The summary is more useful with them.",
+  "@stepsMissing": {
+    "placeholders": {
+      "steps": {
+        "type": "String"
+      }
+    }
+  },
+  "nothingYet": "Nothing to send yet. Run step 1 first.",
+  "settingsTooltip": "Settings",
+  "refreshTooltip": "Read the phone again",
+  "scoreTitle": "Privacy score",
+  "scoreOutOf": "of 100",
+  "scoreAllGood": "Nothing to fix. Well kept.",
+  "scoreToFix": "{count, plural, =1{1 thing to look at} other{{count} things to look at}}",
+  "@scoreToFix": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "scoreExplain": "How the score is counted",
+  "phoneOnlyNote": "Everything here is read on this phone and stays on it.",
+  "fixNext": "Fix next",
+  "allFindings": "Everything to look at",
+  "seeAll": "See all {count}",
+  "@seeAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appsTile": "Apps and permissions",
+  "appsTileSub": "{apps} apps, {findings} to look at",
+  "@appsTileSub": {
+    "placeholders": {
+      "apps": {
+        "type": "int"
+      },
+      "findings": {
+        "type": "int"
+      }
+    }
+  },
+  "checklistTile": "Device checklist",
+  "checklistTileSub": "{attention} to fix, {manual} to check yourself",
+  "@checklistTileSub": {
+    "placeholders": {
+      "attention": {
+        "type": "int"
+      },
+      "manual": {
+        "type": "int"
+      }
+    }
+  },
+  "usageCardTitle": "See which apps you no longer use",
+  "usageCardBody": "Switch on Usage access for ZT Privacy, and it can point out apps you have not opened for 90 days that still hold permissions. This stays on the phone.",
+  "usageCardButton": "Open Usage access",
+  "readFailed": "The phone could not be read: {error}",
+  "@readFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "tryAgain": "Try again",
+  "partsFailed": "Some parts could not be read, so they are left out: {parts}",
+  "@partsFailed": {
+    "placeholders": {
+      "parts": {
+        "type": "String"
+      }
+    }
+  },
+  "openSetting": "Open the setting",
+  "openAppSettings": "Open the app's settings",
+  "openFailed": "That screen did not open: {error}",
+  "@openFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "acceptButton": "I'm fine with this",
+  "unacceptButton": "Count it again",
+  "findingCosts": "{points, plural, =1{Takes 1 point off the score} other{Takes {points} points off the score}}",
+  "@findingCosts": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "findingAccepted": "You are fine with this, so it does not count.",
+  "saveFailed": "That could not be saved: {error}",
+  "@saveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "scoreIntro": "The score starts at 100. Each thing found takes points off, up to a limit for each kind. Things you are fine with cost nothing.",
+  "scoreLine": "{open} found, {points} off",
+  "@scoreLine": {
+    "placeholders": {
+      "open": {
+        "type": "int"
+      },
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "scoreLineAccepted": "{count} you are fine with",
+  "@scoreLineAccepted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "scoreNoLines": "Nothing was found, so nothing is taken off.",
+  "tabByPermission": "By permission",
+  "tabByApp": "By app",
+  "searchApps": "Search apps",
+  "showSystem": "Show system apps",
+  "sectionPermissions": "Permissions",
+  "sectionSpecial": "Special access",
+  "heldBy": "Held by {holding}, asked for by {asking}",
+  "@heldBy": {
+    "placeholders": {
+      "holding": {
+        "type": "int"
+      },
+      "asking": {
+        "type": "int"
+      }
+    }
+  },
+  "heldByOnly": "{count, plural, =0{No app} =1{1 app} other{{count} apps}}",
+  "@heldByOnly": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noAppHolds": "No app of yours holds this.",
+  "noAppsMatch": "No app matches.",
+  "appToLookAt": "{count, plural, =1{1 to look at} other{{count} to look at}}",
+  "@appToLookAt": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appSystem": "Part of the system",
+  "appInstalledFrom": "Installed by {installer}",
+  "@appInstalledFrom": {
+    "placeholders": {
+      "installer": {
+        "type": "String"
+      }
+    }
+  },
+  "appInstalledFromUnknown": "Android does not say who installed it",
+  "appBuiltFor": "Built for Android {version}",
+  "@appBuiltFor": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "appInstalledOn": "Installed {date}",
+  "@appInstalledOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "appUpdatedOn": "Last updated {date}",
+  "@appUpdatedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "appLastUsed": "Last used {date}",
+  "@appLastUsed": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "appNotUsed": "Not used in the last 90 days",
+  "appHoldsTitle": "What it holds",
+  "appHoldsNothing": "None of the permissions ZT Privacy watches.",
+  "appFindingsTitle": "To look at",
+  "appNoFindings": "Nothing to point out.",
+  "checksRead": "Read from the phone",
+  "checksManual": "To check yourself",
+  "checksManualHint": "Android does not let an app read these. Open the setting, look, and tick it off.",
+  "checksGraphene": "GrapheneOS",
+  "stateUnknown": "Android does not say",
+  "valueOn": "On",
+  "valueOff": "Off",
+  "stateGood": "Good",
+  "stateAttention": "Worth changing",
+  "markChecked": "I checked this",
+  "settingsPhoneTest": "Phone test",
+  "settingsPhoneTestHint": "What Android lets ZT Privacy read on this phone",
+  "permLocationPrecise": "Location, precise",
+  "permLocationApprox": "Location, approximate",
+  "permLocationAlways": "Location, all the time",
+  "permCamera": "Camera",
+  "permMicrophone": "Microphone",
+  "permContacts": "Contacts",
+  "permCalendar": "Calendar",
+  "permSms": "Text messages",
+  "permCallLog": "Call log",
+  "permPhoneState": "Phone number and call state",
+  "permPhotos": "Photos and videos",
+  "permFilesOld": "Files (the old way)",
+  "permNearby": "Nearby devices",
+  "permBodySensors": "Body sensors",
+  "permActivity": "Physical activity",
+  "permNotifications": "Notifications",
+  "ruleNoScreenLock": "Screen lock",
+  "findingNoScreenLock": "The phone has no screen lock",
+  "whyNoScreenLock": "Anyone who picks up the phone can open everything on it. Set a PIN or a password.",
+  "ruleOldSecurityPatch": "Security updates",
+  "findingOldSecurityPatch": "Last security update: {date}",
+  "@findingOldSecurityPatch": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "whyOldSecurityPatch": "Security updates close holes that are already known. More than 90 days without one is a long time. Check for a system update. If none is offered, the phone may no longer get them.",
+  "ruleUsbDebugging": "USB debugging",
+  "findingUsbDebugging": "USB debugging is on",
+  "whyUsbDebugging": "With USB debugging on, a computer the phone is plugged into can read and change almost everything, once you allow it. Switch it off when you are not using it.",
+  "ruleWirelessDebugging": "Wireless debugging",
+  "findingWirelessDebugging": "Wireless debugging is on",
+  "whyWirelessDebugging": "With wireless debugging on, a paired computer on the same Wi-Fi can read and change almost everything on the phone. Switch it off when you are not using it.",
+  "ruleDeveloperOptions": "Developer options",
+  "findingDeveloperOptions": "Developer options are on",
+  "whyDeveloperOptions": "Developer options hold switches that weaken the phone's protections. If you are not using them, switch them off.",
+  "ruleLockScreenContent": "Messages on the lock screen",
+  "findingLockScreenContent": "Message text shows on the lock screen",
+  "whyLockScreenContent": "Anyone who sees the locked phone can read your messages and sign-in codes as they arrive. Choose to hide sensitive content on the lock screen.",
+  "ruleWifiScanning": "Wi-Fi scanning",
+  "findingWifiScanning": "Wi-Fi scanning stays on when Wi-Fi is off",
+  "whyWifiScanning": "Apps and services can look for Wi-Fi networks even when Wi-Fi is switched off, which can be used to work out where you are.",
+  "ruleBluetoothScanning": "Bluetooth scanning",
+  "findingBluetoothScanning": "Bluetooth scanning stays on when Bluetooth is off",
+  "whyBluetoothScanning": "Apps and services can look for Bluetooth devices even when Bluetooth is switched off, which can be used to work out where you are.",
+  "ruleAccessibility": "Accessibility services",
+  "findingAccessibility": "{app} can read and control the screen",
+  "@findingAccessibility": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "whyAccessibility": "An accessibility service can read everything on the screen, including passwords and messages, and tap for you. Keep it only for apps you trust completely, such as a password manager or a screen reader you use.",
+  "ruleDeviceAdmin": "Device admin apps",
+  "findingDeviceAdmin": "{app} is a device admin",
+  "@findingDeviceAdmin": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "whyDeviceAdmin": "A device admin can change the screen lock rules, lock the phone or erase it, and is harder to uninstall. Keep it only for an app you chose for that job.",
+  "ruleNotificationAccess": "Notification access",
+  "findingNotificationAccess": "{app} can read all notifications",
+  "@findingNotificationAccess": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "whyNotificationAccess": "This app can read every notification, including messages and sign-in codes, and dismiss them. Keep it only for apps that need it, such as a watch or a car connection.",
+  "ruleBackgroundLocation": "Location all the time",
+  "findingBackgroundLocation": "{app} can see your location all the time",
+  "@findingBackgroundLocation": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "whyBackgroundLocation": "This app can see where you are even when you are not using it. Most apps work with \"Only while using the app\".",
+  "ruleSms": "Text messages",
+  "findingSms": "{app} can read your text messages",
+  "@findingSms": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "whySms": "Text messages often carry sign-in codes. Only your messaging app needs to read them.",
+  "ruleCallLog": "Call log",
+  "findingCallLog": "{app} can read your call log",
+  "@findingCallLog": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "whyCallLog": "The call log shows who you speak to and when. Only your phone app needs it.",
+  "ruleAllFiles": "All files access",
+  "findingAllFiles": "{app} can read all your files",
+  "@findingAllFiles": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "whyAllFiles": "This app can read and change every file in shared storage: photos, downloads, documents. A file manager needs it; most apps do not.",
+  "ruleOverlay": "Display over other apps",
+  "findingOverlay": "{app} can draw over other apps",
+  "@findingOverlay": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "whyOverlay": "This app can draw on top of other apps. That can be used to cover what you see or to trick you into tapping.",
+  "ruleInstallsApps": "Installing other apps",
+  "findingInstallsApps": "{app} can install other apps",
+  "@findingInstallsApps": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "whyInstallsApps": "This app can ask to install other apps from outside your app store. Keep it for the store or browser you install from.",
+  "ruleUsageAccess": "Usage access",
+  "findingUsageAccess": "{app} can see which apps you use",
+  "@findingUsageAccess": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "whyUsageAccess": "This app can see which apps you use, when and for how long.",
+  "ruleOldTarget": "Built for an old Android",
+  "findingOldTarget": "{app} was built for Android {version}",
+  "@findingOldTarget": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      },
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "whyOldTarget": "Apps built for Android 10 or older skip protections added since, such as limits on reading files and the automatic removal of unused permissions.",
+  "ruleNotUpdated": "Not updated for two years",
+  "findingNotUpdated": "{app} has not been updated for over {years} years",
+  "@findingNotUpdated": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      },
+      "years": {
+        "type": "int"
+      }
+    }
+  },
+  "whyNotUpdated": "An app with no updates for two years is probably no longer looked after, so known problems in it stay open.",
+  "ruleUnused": "Unused apps with permissions",
+  "findingUnused": "{app} has not been used for 90 days",
+  "@findingUnused": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "whyUnused": "You have not opened this app for 90 days, and it still holds permissions. Remove it, or take the permissions away.",
+  "checkScreenLock": "Screen lock",
+  "checkEncryption": "Storage encryption",
+  "checkWhyEncryption": "Everything stored on the phone is encrypted, and opens only with your screen lock.",
+  "checkSecurityPatch": "Security update",
+  "checkUsbDebugging": "USB debugging",
+  "checkWirelessDebugging": "Wireless debugging",
+  "checkDeveloperOptions": "Developer options",
+  "checkLockScreenContent": "Message text on the lock screen",
+  "checkWifiScanning": "Wi-Fi scanning while Wi-Fi is off",
+  "checkBluetoothScanning": "Bluetooth scanning while Bluetooth is off",
+  "checkPrivateDns": "Private DNS",
+  "checkWhyPrivateDns": "Private DNS hides the names of the sites you look up from the network you are on, and can block trackers if you pick a filtering service.",
+  "checkVpn": "VPN",
+  "checkWhyVpn": "A VPN hides what you do from the network you are on, and your address from the sites you visit. It moves that trust to the VPN provider.",
+  "checkAdvancedProtection": "Advanced Protection",
+  "checkWhyAdvancedProtection": "Android's Advanced Protection switches on its strongest safeguards at once. Worth it if you are at higher risk.",
+  "checkAlwaysOnVpn": "VPN always on, with nothing allowed outside it",
+  "checkWhyAlwaysOnVpn": "With \"Always-on VPN\" and \"Block connections without VPN\", nothing leaves the phone outside the VPN, not even for a moment while it reconnects. Android does not let apps read this setting.",
+  "checkAdvertisingId": "Advertising ID deleted",
+  "checkWhyAdvertisingId": "The advertising ID lets apps link what you do across them. Delete it under Settings, Privacy, Ads.",
+  "checkAutoReboot": "Auto reboot",
+  "checkWhyAutoReboot": "GrapheneOS can restart the phone when it has not been unlocked for a while, which puts your data back at rest, fully encrypted. Look under Settings, Security & privacy, Exploit protection.",
+  "checkUsbPort": "USB-C port closed while the phone is locked",
+  "checkWhyUsbPort": "GrapheneOS can refuse new USB connections while the phone is locked. Look under Settings, Security & privacy, Exploit protection.",
+  "checkWifiAutoOff": "Wi-Fi switches itself off when not connected",
+  "checkWhyWifiAutoOff": "GrapheneOS can switch Wi-Fi off after it has had no connection for a while. Look under Settings, Network & internet, Internet, Network preferences.",
+  "checkBluetoothAutoOff": "Bluetooth switches itself off when not connected",
+  "checkWhyBluetoothAutoOff": "GrapheneOS can switch Bluetooth off after it has had no connection for a while. Look under Settings, Connected devices, Connection preferences, Bluetooth.",
+  "checkPinScrambling": "Scrambled PIN keypad",
+  "checkWhyPinScrambling": "A keypad with the digits in a new order each time stops someone learning your PIN from where you tap. Look under Settings, Security & privacy, Device unlock.",
+  "checkDuressPin": "Duress PIN",
+  "checkWhyDuressPin": "A second PIN that erases the phone when it is entered. Look under Settings, Security & privacy, Device unlock.",
+  "checkNetworkSensors": "Network and Sensors permissions reviewed",
+  "checkWhyNetworkSensors": "On GrapheneOS every app has a Network and a Sensors permission that you can switch off. Go through your apps and take them away where an app has no need for them.",
+  "findingCostsEach": "Each one takes {points} off the score, and all of this kind together {cap} at most.",
+  "@findingCostsEach": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      },
+      "cap": {
+        "type": "int"
+      }
+    }
+  },
+  "acceptedHeading": "You are fine with these",
+  "nothingToLookAt": "Nothing to look at here.",
+  "aboutThisApp": "About this app",
+  "readingPhone": "Reading the phone…",
+  "lastUsedNeedsAccess": "Switch on Usage access to see when it was last used",
+  "lastUsedUnknown": "Android did not say when it was last used",
+  "holdersTitle": "Apps that hold this"
 }
