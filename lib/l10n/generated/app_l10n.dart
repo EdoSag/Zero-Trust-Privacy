@@ -1740,6 +1740,24 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'This app contains code made for advertising, analytics or the like, and it also holds a permission that tells it something about you, such as location, contacts, camera or microphone. Finding the code does not prove that it runs or what it sends. The two together are still worth a look: take away the permissions the app does not need, or look for an app without this code.'**
   String get whyTrackerCode;
+
+  /// No description provided for @appIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Part of its code could not be read'**
+  String get appIncomplete;
+
+  /// No description provided for @appTrackersIncompleteNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No tracker code was found in the part of this app that could be read. The rest could not be read, so it is not known whether the app is free of it.'**
+  String get appTrackersIncompleteNone;
+
+  /// No description provided for @appTrackersIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Part of this app\'s code could not be read, so there may be more.'**
+  String get appTrackersIncomplete;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

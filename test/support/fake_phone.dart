@@ -234,6 +234,9 @@ class InstantScanner implements TrackerScanner {
   /// Packages whose code cannot be read.
   Set<String> unreadable = {};
 
+  /// Packages with one part read and another that failed.
+  Set<String> incomplete = {};
+
   /// Every package asked for, in order, over all scans.
   final List<String> scanned = [];
 
@@ -250,6 +253,8 @@ class InstantScanner implements TrackerScanner {
           types: 10,
           errors: unreadable.contains(target.package)
               ? const ['base.apk: Permission denied']
+              : incomplete.contains(target.package)
+              ? const ['classes2.dex: too large to read']
               : const [],
           elapsed: const Duration(milliseconds: 1),
         ),

@@ -1046,4 +1046,15 @@ class AppL10nEn extends AppL10n {
   @override
   String get whyTrackerCode =>
       'This app contains code made for advertising, analytics or the like, and it also holds a permission that tells it something about you, such as location, contacts, camera or microphone. Finding the code does not prove that it runs or what it sends. The two together are still worth a look: take away the permissions the app does not need, or look for an app without this code.';
+
+  @override
+  String get appIncomplete => 'Part of its code could not be read';
+
+  @override
+  String get appTrackersIncompleteNone =>
+      'No tracker code was found in the part of this app that could be read. The rest could not be read, so it is not known whether the app is free of it.';
+
+  @override
+  String get appTrackersIncomplete =>
+      'Part of this app\'s code could not be read, so there may be more.';
 }

@@ -184,6 +184,62 @@ void main() {
     expect(cache.kept!.listVersion, newer.version);
   });
 
+  test('a list that only corrects one signature reads everything '
+      'again', () async {
+    final cache = MemoryScanCache();
+    await Scans(probe: phoneWith([maps]), cache: cache).open();
+
+    // The same trackers, the same date, one code name put right.
+    final corrected = TrackerList(
+      trackers: const [
+        Tracker(
+          id: 11,
+          name: 'Ad Network',
+          code: ['com.adnetwork.sdk.'],
+          kinds: {TrackerKind.ads},
+        ),
+        appStats,
+        crashCatcher,
+        mysteryKit,
+      ],
+      newestEntry: '2023-12-05',
+      attribution: '',
+    );
+    expect(corrected.version, isNot(someTrackers().version));
+    final scans = Scans(
+      probe: phoneWith([maps]),
+      cache: cache,
+      list: corrected,
+    );
+    await scans.open();
+    expect(scans.instant.scanned, ['com.maps']);
+  });
+
+  test('an app read only in part is kept as such, with what was '
+      'found', () async {
+    final scans = Scans(probe: phoneWith([maps, notes]));
+    scans.instant
+      ..incomplete = {'com.maps', 'com.notes'}
+      ..found = {
+        'com.maps': ['Ad Network'],
+      };
+    await scans.open();
+
+    expect(scans.namesIn('com.maps'), ['Ad Network']);
+    expect(scans.namesIn('com.notes'), isEmpty);
+    final kept = scans.cache.kept!.apps;
+    expect(kept['com.maps']!.incomplete, isTrue);
+    expect(kept['com.notes']!.incomplete, isTrue);
+    expect(kept['com.notes']!.unreadable, isFalse);
+    // And it comes back from the file that way.
+    expect(
+      ScanMemory.fromJson(
+        scans.cache.kept!.toJson(),
+      ).apps['com.notes']!.incomplete,
+      isTrue,
+    );
+  });
+
   test('an update of the phone reads its own apps again, not the '
       'user\'s', () async {
     final cache = MemoryScanCache();

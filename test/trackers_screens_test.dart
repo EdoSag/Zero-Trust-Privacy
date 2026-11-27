@@ -523,6 +523,48 @@ void main() {
       expect(byKey('app-trackers-none'), findsNothing);
     });
 
+    testWidgets('read only in part is never called clean', (tester) async {
+      (world.scanner as InstantScanner).incomplete = {'com.files', 'com.maps'};
+      await show(tester, const TrackersPage(), world);
+      // In the list: nothing found is not "no tracker code".
+      expect(
+        subtitleOf(tester, 'app-com.files'),
+        'Part of its code could not be read',
+      );
+      // What was found is still shown.
+      expect(subtitleOf(tester, 'app-com.maps'), 'Code from 3 trackers');
+
+      await tester.tap(byKey('app-com.files'));
+      await tester.pumpAndSettle();
+      expect(byKey('app-trackers-none'), findsNothing);
+      expect(
+        find.textContaining('it is not known whether the app is free of it'),
+        findsOneWidget,
+      );
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+
+      await tester.tap(byKey('app-com.maps'));
+      await tester.pumpAndSettle();
+      expectInOrder(tester, [
+        'tracker-${crashCatcher.id}',
+        'app-trackers-incomplete',
+        'app-open-settings',
+      ]);
+      expect(
+        find.text(
+          "Part of this app's code could not be read, so there may be more.",
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('read only in part, in Hebrew', (tester) async {
+      (world.scanner as InstantScanner).incomplete = {'com.files'};
+      await show(tester, const TrackersPage(), world, locale: hebrew);
+      expect(subtitleOf(tester, 'app-com.files'), 'חלק מהקוד שלה לא נקרא');
+    });
+
     testWidgets('not read yet says so', (tester) async {
       world = World(scanner: FakeScanner());
       await openApp(tester, 'com.maps');

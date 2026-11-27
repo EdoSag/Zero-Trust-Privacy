@@ -15,7 +15,10 @@ void main() {
     expect(list.newestEntry, matches(RegExp(r'^\d{4}-\d\d-\d\d$')));
     expect(list.attribution, contains('Exodus Privacy'));
     expect(list.attribution, contains('ODbL'));
-    expect(list.version, '${list.newestEntry}/${list.trackers.length}');
+    expect(
+      list.version,
+      startsWith('${list.newestEntry}/${list.trackers.length}/'),
+    );
 
     final raw =
         jsonDecode(File(TrackerList.asset).readAsStringSync())
@@ -77,6 +80,24 @@ void main() {
     final ending = CodeSignature('.TrackerManager');
     expect(ending.anywhere, isTrue);
     expect(String.fromCharCodes(ending.bytes), '/TrackerManager');
+  });
+
+  test('the version follows the definitions, not only their number', () {
+    TrackerList list(List<String> code, {String name = 'Kit', int id = 1}) =>
+        TrackerList(
+          trackers: [Tracker(id: id, name: name, code: code)],
+          newestEntry: '2023-12-05',
+          attribution: '',
+        );
+    final version = list(['com.kit.']).version;
+    expect(version, list(['com.kit.']).version);
+    expect(version, startsWith('2023-12-05/1/'));
+    expect(list(['com.kit.sdk.']).version, isNot(version));
+    expect(list(['com.kit.', 'com.other.']).version, isNot(version));
+    expect(list(['com.kit.'], name: 'Kit 2').version, isNot(version));
+    expect(list(['com.kit.'], id: 2).version, isNot(version));
+    // Where one name ends and the next begins counts too.
+    expect(list(['com.a', 'b.']).version, isNot(list(['com.ab', '.']).version));
   });
 
   test('two trackers with one name are refused', () {

@@ -117,7 +117,15 @@ class AppPage extends ConsumerWidget {
               key: const Key('app-trackers-unknown'),
             )
           else if (trackers.isEmpty)
-            Paragraph(l.appTrackersNone, key: const Key('app-trackers-none'))
+            scan?.incomplete ?? false
+                ? Paragraph(
+                    l.appTrackersIncompleteNone,
+                    key: const Key('app-trackers-incomplete'),
+                  )
+                : Paragraph(
+                    l.appTrackersNone,
+                    key: const Key('app-trackers-none'),
+                  )
           else ...[
             Paragraph(l.appTrackersFound),
             for (final tracker in trackers)
@@ -136,6 +144,11 @@ class AppPage extends ConsumerWidget {
                     ),
                   ),
                 ),
+              ),
+            if (scan?.incomplete ?? false)
+              Paragraph(
+                l.appTrackersIncomplete,
+                key: const Key('app-trackers-incomplete'),
               ),
             Paragraph(l.trackersCaveat, small: true),
           ],

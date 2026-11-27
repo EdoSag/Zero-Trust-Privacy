@@ -7,6 +7,7 @@ class AppTrackers {
     required this.lastUpdate,
     required this.trackerIds,
     this.unreadable = false,
+    this.incomplete = false,
   });
 
   factory AppTrackers.fromJson(Map<String, Object?> json) => AppTrackers(
@@ -15,6 +16,7 @@ class AppTrackers {
       for (final id in (json['t'] as List?) ?? const []) (id as num).toInt(),
     ],
     unreadable: json['x'] == true,
+    incomplete: json['p'] == true,
   );
 
   /// [InstalledApp.lastUpdate] of the version that was scanned. An update
@@ -27,10 +29,15 @@ class AppTrackers {
   /// None of the app's code could be read, so nothing is known about it.
   final bool unreadable;
 
+  /// Some of the app's code was read and some could not be: what was found
+  /// is real, but "nothing found" does not mean there is nothing.
+  final bool incomplete;
+
   Map<String, Object?> toJson() => {
     'u': lastUpdate,
     't': trackerIds,
     if (unreadable) 'x': true,
+    if (incomplete) 'p': true,
   };
 }
 

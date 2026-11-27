@@ -117,9 +117,31 @@ class TrackerList {
   /// The credit the database's licence asks for.
   final String attribution;
 
-  /// Changes whenever the list does, so results found with an older list
-  /// are looked for again.
-  late final String version = '$newestEntry/${trackers.length}';
+  /// Changes whenever what a scan looks for does, so results found with
+  /// an older list are looked for again. It carries a fingerprint of every
+  /// tracker's number, name and code names: a list that only corrects one
+  /// signature has the same date and the same count.
+  late final String version =
+      '$newestEntry/${trackers.length}/${_fingerprint()}';
+
+  /// FNV-1a over the definitions, as eight hex digits.
+  String _fingerprint() {
+    var hash = 0x811c9dc5;
+    void add(String text) {
+      for (final unit in text.codeUnits) {
+        hash = ((hash ^ unit) * 0x01000193) & 0xffffffff;
+      }
+      // A mark between two texts, so "ab" + "c" differs from "a" + "bc".
+      hash = ((hash ^ 0xff) * 0x01000193) & 0xffffffff;
+    }
+
+    for (final tracker in trackers) {
+      add('${tracker.id}');
+      add(tracker.name);
+      tracker.code.forEach(add);
+    }
+    return hash.toRadixString(16).padLeft(8, '0');
+  }
 
   late final Map<int, Tracker> byId = {for (final t in trackers) t.id: t};
   late final Map<String, Tracker> byName = {

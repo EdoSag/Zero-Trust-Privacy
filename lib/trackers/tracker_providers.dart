@@ -306,6 +306,9 @@ class _ScanRun {
           if (list.byName[name] case final tracker?) tracker.id,
       ]..sort(),
       unreadable: scan.dexFiles == 0 && scan.errors.isNotEmpty,
+      // A file or a part of the code that failed while others were read:
+      // kept, so the app is never shown as free of tracker code.
+      incomplete: scan.dexFiles > 0 && scan.errors.isNotEmpty,
     );
     _done++;
     if (_done % TrackerScans.saveEvery == 0) _save();

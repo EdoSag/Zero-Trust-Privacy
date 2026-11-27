@@ -28,7 +28,9 @@ String trackerNote(AppL10n l, TrackerResults results, InstalledApp app) {
   if (scan == null) return l.appNotChecked;
   if (scan.unreadable) return l.appUnreadable;
   final count = results.of(app)?.length ?? 0;
-  return count == 0 ? l.appNoTrackers : l.appTrackerCount(count);
+  if (count > 0) return l.appTrackerCount(count);
+  // Nothing found in the part that was read is not "nothing in the app".
+  return scan.incomplete ? l.appIncomplete : l.appNoTrackers;
 }
 
 /// Where the scan stands, shown while it runs.
