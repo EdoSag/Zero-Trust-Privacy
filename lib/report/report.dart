@@ -36,9 +36,16 @@ String buildReport(PhoneTestResults results, {required bool withNames}) {
     ..writeln('Taken: ${results.takenAt?.toUtc().toIso8601String() ?? '-'}')
     ..writeln('App names: ${withNames ? 'included' : 'left out'}');
 
+  // Android's refusals are quoted as it worded them, and its wording can
+  // name an app or the folder an app is installed in. The summary takes
+  // those names out again.
+  final clean = withNames ? (String text) => text : _nameRemover(results);
+
   if (results.errors.isNotEmpty) {
     out.writeln('\n== Steps that failed ==');
-    results.errors.forEach((step, error) => out.writeln('$step: $error'));
+    results.errors.forEach(
+      (step, error) => out.writeln('$step: ${clean(error)}'),
+    );
   }
 
   final device = results.device;
@@ -47,8 +54,8 @@ String buildReport(PhoneTestResults results, {required bool withNames}) {
     for (final value in device) {
       out.writeln(
         value.ok
-            ? '${value.id}: ${value.value ?? '(empty)'}'
-            : '${value.id}: REFUSED ${value.error ?? ''}',
+            ? '${value.id}: ${_settingText(value, withNames)}'
+            : '${value.id}: REFUSED ${clean(value.error ?? '')}',
       );
     }
     final refused = device.where((v) => !v.ok).length;
@@ -66,7 +73,7 @@ String buildReport(PhoneTestResults results, {required bool withNames}) {
     for (final entry in special.entries) {
       final list = entry.value;
       if (!list.ok) {
-        out.writeln('${entry.key}: REFUSED ${list.error ?? ''}');
+        out.writeln('${entry.key}: REFUSED ${clean(list.error ?? '')}');
       } else if (withNames) {
         out.writeln(
           '${entry.key}: ${list.items.length}'
@@ -97,18 +104,18 @@ String buildReport(PhoneTestResults results, {required bool withNames}) {
           .map((r) => r.mode)
           .where((m) => _modeKey(m) == 'refused')
           .firstOrNull;
-      if (refusal != null) out.writeln('  first refusal: $refusal');
+      if (refusal != null) out.writeln('  first refusal: ${clean(refusal)}');
     }
   }
 
   final usage = results.usage;
   if (usage != null) {
-    _writeUsage(out, results, usage);
+    _writeUsage(out, results, usage, clean);
   }
 
   final deep = results.deepMode;
   if (deep != null) {
-    _writeDeepMode(out, results, deep, withNames);
+    _writeDeepMode(out, results, deep, withNames, clean);
   }
 
   if (results.screens.isNotEmpty) {
@@ -117,19 +124,76 @@ String buildReport(PhoneTestResults results, {required bool withNames}) {
       (screen, result) => out.writeln(
         result.ok
             ? '$screen: opened'
-            : '$screen: REFUSED ${result.error ?? ''}',
+            : '$screen: REFUSED ${clean(result.error ?? '')}',
       ),
     );
   }
 
   if (results.scans.isNotEmpty || results.scanTargets > 0) {
-    _writeScan(out, results, withNames);
+    _writeScan(out, results, withNames, clean);
   }
 
   if (withNames && apps != null) {
     _writePerApp(out, results, apps);
   }
   return out.toString();
+}
+
+/// Settings whose value is the name of an app (or a list of them): the
+/// keyboard, the accessibility services, the password manager and so on.
+const _settingsNamingApps = {
+  'secure.always_on_vpn_app',
+  'secure.default_input_method',
+  'secure.enabled_accessibility_services',
+  'secure.enabled_notification_listeners',
+  'secure.autofill_service',
+  'secure.credential_service',
+  'secure.voice_interaction_service',
+  'secure.assistant',
+  'secure.nfc_payment_default_component',
+};
+
+/// Settings whose value is an address the user chose. A private DNS name
+/// can hold a personal account id, so the summary only says it is set.
+const _settingsNamingServers = {
+  'global.private_dns_specifier',
+  'network.privateDnsServer',
+};
+
+/// What the report shows for one setting. The summary never shows the name
+/// of an app or of a server: only whether the setting is set, and for a
+/// list, how long it is.
+String _settingText(ProbeValue value, bool withNames) {
+  final text = value.value;
+  if (text == null || text.isEmpty) return '(empty)';
+  if (withNames) return text;
+  if (_settingsNamingServers.contains(value.id)) return 'set';
+  if (_settingsNamingApps.contains(value.id)) {
+    final count = text.split(':').where((part) => part.isNotEmpty).length;
+    return 'set ($count)';
+  }
+  return text;
+}
+
+/// Takes the name of every app the phone test saw out of a text.
+String Function(String) _nameRemover(PhoneTestResults results) {
+  final names = <String>{
+    for (final app in results.apps ?? const <InstalledApp>[]) app.package,
+    for (final app in results.usage?.apps ?? const <AppUsage>[]) app.package,
+    for (final row in results.deepMode?.entries ?? const <OpUse>[]) row.package,
+    for (final list in (results.specialAccess ?? const {}).values)
+      for (final item in list.items) item.split('/').first,
+    for (final rows in (results.accessAnswers ?? const {}).values)
+      for (final row in rows) row.package,
+  };
+  // A name without a dot ("android") is also an ordinary word in Android's
+  // messages and names no app the user chose. The longest names go first,
+  // so that "com.shop.pay" is not left as "(app).pay".
+  final ordered = names.where((name) => name.contains('.')).toList()
+    ..sort((a, b) => b.length.compareTo(a.length));
+  if (ordered.isEmpty) return (text) => text;
+  final pattern = RegExp(ordered.map(RegExp.escape).join('|'));
+  return (text) => text.replaceAll(pattern, '(app)');
 }
 
 void _writeApps(
@@ -207,13 +271,14 @@ void _writeUsage(
   StringBuffer out,
   PhoneTestResults results,
   UsageReport usage,
+  String Function(String) clean,
 ) {
   out
     ..writeln('\n== Usage access ==')
     ..writeln('Switched on: ${_yesNo(usage.granted)}');
   if (!usage.granted) return;
   if (usage.appsError != null) {
-    out.writeln('Last-used times: REFUSED ${usage.appsError}');
+    out.writeln('Last-used times: REFUSED ${clean(usage.appsError!)}');
   } else {
     final lastUsed = {for (final app in usage.apps) app.package: app.lastUsed};
     final taken = results.takenAt ?? DateTime.now();
@@ -232,7 +297,7 @@ void _writeUsage(
       use.ok
           ? '$name data: ${use.bytesByUid.length} apps, '
                 '${_megabytes(use.bytesByUid.values.fold(0, (a, b) => a + b))} MB'
-          : '$name data: REFUSED ${use.error ?? ''}',
+          : '$name data: REFUSED ${clean(use.error ?? '')}',
     );
   }
 }
@@ -242,6 +307,7 @@ void _writeDeepMode(
   PhoneTestResults results,
   DeepModeReport deep,
   bool withNames,
+  String Function(String) clean,
 ) {
   out
     ..writeln('\n== Deep mode (who used camera, microphone, location) ==')
@@ -252,7 +318,7 @@ void _writeDeepMode(
     out.writeln(
       attempt.ok
           ? 'Step ${attempt.step}: worked'
-          : 'Step ${attempt.step}: REFUSED ${attempt.error ?? ''}',
+          : 'Step ${attempt.step}: REFUSED ${clean(attempt.error ?? '')}',
     );
   }
   out.writeln('History could be read: ${_yesNo(deep.works)}');
@@ -279,7 +345,12 @@ void _writeDeepMode(
   }
 }
 
-void _writeScan(StringBuffer out, PhoneTestResults results, bool withNames) {
+void _writeScan(
+  StringBuffer out,
+  PhoneTestResults results,
+  bool withNames,
+  String Function(String) clean,
+) {
   final scans = results.scans;
   final times = [for (final scan in scans) scan.elapsed.inMicroseconds]..sort();
   final byKit = <String, int>{};
@@ -317,7 +388,7 @@ void _writeScan(StringBuffer out, PhoneTestResults results, bool withNames) {
     )
     ..writeln('Apps with a read error: ${failed.length}');
   for (final scan in failed.take(5)) {
-    out.writeln('  ${scan.errors.first}');
+    out.writeln('  ${clean(scan.errors.first)}');
   }
   if (byKit.isNotEmpty) {
     out.writeln('Kits found, by number of apps: ${_counts(byKit)}');

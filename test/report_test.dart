@@ -134,6 +134,192 @@ void main() {
     expect(report, contains('Microphone: 0 / 0'));
   });
 
+  test('the summary hides which apps and servers the settings name', () async {
+    final probe = FakeProbe()
+      ..values = const [
+        ProbeValue(id: 'build.model', ok: true, value: 'Test Phone'),
+        ProbeValue(
+          id: 'secure.default_input_method',
+          ok: true,
+          value: 'com.keys/.Ime',
+        ),
+        ProbeValue(
+          id: 'secure.enabled_accessibility_services',
+          ok: true,
+          value: 'com.reader/.Service:org.helper.screen/.Reader',
+        ),
+        ProbeValue(
+          id: 'secure.enabled_notification_listeners',
+          ok: true,
+          value: 'org.watch.link/.Listener',
+        ),
+        ProbeValue(id: 'secure.autofill_service', ok: true, value: ''),
+        ProbeValue(id: 'secure.assistant', ok: true),
+        ProbeValue(
+          id: 'secure.always_on_vpn_app',
+          ok: true,
+          value: 'net.tunnel.vpn',
+        ),
+        ProbeValue(
+          id: 'global.private_dns_specifier',
+          ok: true,
+          value: 'abc123.dns.example.net',
+        ),
+        ProbeValue(
+          id: 'network.privateDnsServer',
+          ok: true,
+          value: 'abc123.dns.example.net',
+        ),
+        ProbeValue(id: 'global.private_dns_mode', ok: true, value: 'hostname'),
+      ];
+    final controller = PhoneTestController(
+      probe: probe,
+      scanner: FakeScanner(),
+      build: '1001',
+    );
+    await controller.readPhone();
+    final summary = controller.report(withNames: false);
+    final full = controller.report(withNames: true);
+    controller.dispose();
+
+    for (final name in [
+      'com.keys',
+      'com.reader',
+      'org.helper.screen',
+      'org.watch.link',
+      'net.tunnel.vpn',
+      'abc123',
+      'example.net',
+    ]) {
+      expect(summary, isNot(contains(name)), reason: name);
+      expect(full, contains(name), reason: name);
+    }
+    // What is left says whether each one is set, and how many it lists.
+    expect(summary, contains('secure.default_input_method: set (1)\n'));
+    expect(
+      summary,
+      contains('secure.enabled_accessibility_services: set (2)\n'),
+    );
+    expect(summary, contains('secure.autofill_service: (empty)\n'));
+    expect(summary, contains('secure.assistant: (empty)\n'));
+    expect(summary, contains('secure.always_on_vpn_app: set (1)\n'));
+    expect(summary, contains('global.private_dns_specifier: set\n'));
+    expect(summary, contains('network.privateDnsServer: set\n'));
+    // Settings that name nothing are shown as they are.
+    expect(summary, contains('global.private_dns_mode: hostname\n'));
+    expect(summary, contains('build.model: Test Phone\n'));
+  });
+
+  test('the summary takes app names out of Android\'s own error texts', () async {
+    final probe = FakeProbe()
+      ..values = const [
+        ProbeValue(
+          id: 'secure.location_mode',
+          ok: false,
+          error: 'SecurityException: com.maps may not read location_mode',
+        ),
+      ]
+      ..lists = const {
+        'keyboards': AccessList(ok: true, items: ['org.typing.board/.Ime']),
+        'deviceAdmins': AccessList(
+          ok: false,
+          items: [],
+          error: 'SecurityException: org.typing.board is not an admin',
+        ),
+      }
+      ..mode = ((query) =>
+          'SecurityException: Package ${query.package} does not belong to 10100')
+      ..usageReport = const UsageReport(
+        granted: true,
+        appsError: 'IllegalStateException: com.gone.app has no stats',
+        apps: [AppUsage(package: 'com.gone.app', lastUsed: 1, foregroundMs: 1)],
+        wifi: DataUse(ok: false, error: 'SecurityException: com.camera'),
+        mobile: DataUse(ok: true),
+      )
+      ..deepReport = const DeepModeReport(
+        permissionGranted: true,
+        attempts: [
+          DeepModeAttempt(
+            step: 'plain',
+            ok: false,
+            error: 'SecurityException: com.notes.extra and com.notes',
+          ),
+        ],
+      )
+      ..screens['privacy'] = const ActionResult(
+        ok: false,
+        error: 'ActivityNotFoundException: com.camera/.Settings',
+      );
+    final controller = PhoneTestController(
+      probe: probe
+        ..installed = [...somePhone(), app('com.notes.extra', uid: 10104)],
+      scanner: FakeScanner(),
+      build: '1001',
+    );
+    await controller.readPhone();
+    await controller.open('privacy');
+    controller.results
+      ..errors['scan'] = 'StateError: isolate died reading com.maps'
+      ..scans.add(
+        scan(
+          'com.maps',
+          errors: [
+            "base.apk: FileSystemException: Cannot open file, path = "
+                "'/data/app/~~Qx1==/com.maps-9zA==/base.apk'",
+          ],
+        ),
+      )
+      ..scanTargets = 1;
+    final summary = controller.report(withNames: false);
+    final full = controller.report(withNames: true);
+    controller.dispose();
+
+    for (final name in [
+      'com.maps',
+      'com.camera',
+      'com.notes',
+      'com.gone.app',
+      'org.typing.board',
+    ]) {
+      expect(summary, isNot(contains(name)), reason: name);
+      expect(full, contains(name), reason: name);
+    }
+    expect(
+      summary,
+      contains(
+        'secure.location_mode: REFUSED SecurityException: '
+        '(app) may not read location_mode',
+      ),
+    );
+    expect(
+      summary,
+      contains('deviceAdmins: REFUSED SecurityException: (app) is'),
+    );
+    expect(
+      summary,
+      contains('first refusal: SecurityException: Package (app) does not'),
+    );
+    expect(
+      summary,
+      contains('Last-used times: REFUSED IllegalStateException: (app)'),
+    );
+    expect(summary, contains('Wi-Fi data: REFUSED SecurityException: (app)'));
+    // The longer name goes first: no "(app).extra" is left behind.
+    expect(
+      summary,
+      contains('Step plain: REFUSED SecurityException: (app) and (app)'),
+    );
+    expect(
+      summary,
+      contains('privacy: REFUSED ActivityNotFoundException: (app)/'),
+    );
+    expect(summary, contains('scan: StateError: isolate died reading (app)'));
+    expect(
+      summary,
+      contains("path = '/data/app/~~Qx1==/(app)-9zA==/base.apk'"),
+    );
+  });
+
   test('settings show their value or Android\'s refusal', () async {
     final report = buildReport(await fullResults(), withNames: false);
     expect(report, contains('build.model: Test Phone'));
