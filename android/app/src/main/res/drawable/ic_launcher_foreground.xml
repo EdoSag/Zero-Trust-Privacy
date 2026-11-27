@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A shield with a check, inside the adaptive icon's safe zone (the middle
+     66 of 108). Placeholder, see ic_launcher_background.xml. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,29 L74,36.5 V52 C74,64.5 65.5,75.5 54,79 C42.5,75.5 34,64.5 34,52 V36.5 Z M50.5,63.5 L66,48 L62.5,44.5 L50.5,56.5 L45.5,51.5 L42,55 Z"
+        android:fillType="evenOdd" />
+</vector>
