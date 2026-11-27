@@ -7,10 +7,12 @@ import '../l10n/l10n.dart';
 import '../phone/phone_providers.dart';
 import '../rules/checklist.dart';
 import '../rules/score.dart';
+import '../trackers/tracker_providers.dart';
 import 'apps_page.dart';
 import 'checklist_page.dart';
 import 'score_page.dart';
 import 'settings_page.dart';
+import 'trackers_page.dart';
 import 'widgets.dart';
 
 /// The dashboard: the score, what to fix next, and the ways into the app
@@ -149,6 +151,13 @@ class _Dashboard extends ConsumerWidget {
               !report.accepted.any((f) => f.rule == c.rule),
         )
         .length;
+    final scan = ref.watch(trackerScansProvider);
+    final trackers = report.trackers;
+    final withTrackers = trackers == null
+        ? 0
+        : phone.userApps
+              .where((app) => trackers.of(app)?.isNotEmpty ?? false)
+              .length;
     final toCheck = checks
         .where(
           (c) => c.state == CheckState.manual && !checked.contains(c.id.name),
@@ -213,6 +222,20 @@ class _Dashboard extends ConsumerWidget {
             report.openAbout(apps: true).length,
           ),
           onTap: () => push(const AppsPage()),
+        ),
+        _Door(
+          key: const Key('home-trackers'),
+          icon: Icons.radar,
+          title: l.trackersTile,
+          subtitle: trackers == null
+              ? l.trackersTileWaiting
+              : scan.scanning
+              ? l.trackersScanning(scan.done, scan.total)
+              : l.trackersTileSub(withTrackers, phone.userApps.length),
+          progress: scan.scanning && scan.total > 0
+              ? scan.done / scan.total
+              : null,
+          onTap: () => push(const TrackersPage()),
         ),
         _Door(
           key: const Key('home-checklist'),
@@ -357,7 +380,7 @@ class _UsageCard extends ConsumerWidget {
   }
 }
 
-/// A way into one of the app's two big lists.
+/// A way into one of the app's big lists.
 class _Door extends StatelessWidget {
   const _Door({
     super.key,
@@ -365,12 +388,16 @@ class _Door extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
+    this.progress,
   });
 
   final IconData icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+
+  /// From 0 to 1 while the list behind the door is still being made.
+  final double? progress;
 
   @override
   Widget build(BuildContext context) {
@@ -381,11 +408,18 @@ class _Door extends StatelessWidget {
       ),
       child: Card(
         clipBehavior: Clip.antiAlias,
-        child: ListTile(
-          leading: Icon(icon),
-          title: Text(title),
-          subtitle: Text(subtitle),
-          onTap: onTap,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(icon),
+              title: Text(title),
+              subtitle: Text(subtitle),
+              onTap: onTap,
+            ),
+            if (progress != null)
+              LinearProgressIndicator(value: progress, minHeight: 4),
+          ],
         ),
       ),
     );

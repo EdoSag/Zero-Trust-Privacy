@@ -24,6 +24,7 @@ enum Rule {
   overlay(2, 6, aboutApp: true),
   installsApps(2, 6, aboutApp: true),
   usageAccess(2, 6, aboutApp: true),
+  trackerCode(2, 8, aboutApp: true),
   oldTarget(2, 6, aboutApp: true),
   notUpdated(1, 5, aboutApp: true),
   unused(1, 8, aboutApp: true);
@@ -50,7 +51,8 @@ class Finding {
   final String? label;
 
   /// A value to show with it: the date of the security update, the Android
-  /// version an app was built for, the number of days since an update.
+  /// version an app was built for, the number of days since an update, the
+  /// number of trackers whose code is in an app.
   final String? detail;
 
   /// Stable between two reads of the phone, so "I'm fine with this" sticks.

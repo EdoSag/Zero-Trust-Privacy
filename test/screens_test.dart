@@ -22,6 +22,7 @@ const dashboardParts = [
   'home-see-all',
   'home-usage',
   'home-apps',
+  'home-trackers',
   'home-checklist',
 ];
 
@@ -35,7 +36,7 @@ void main() {
   setUp(() => world = World());
 
   group('dashboard', () {
-    testWidgets('shows the score, what to fix next and the two lists', (
+    testWidgets('shows the score, what to fix next and the lists', (
       tester,
     ) async {
       await show(tester, const PrivacyHome(), world);
@@ -83,6 +84,8 @@ void main() {
           world,
           size: smallPhone,
           locale: locale,
+          // Narrow and with large text the page is long.
+          height: 4500,
         );
         expect(tester.takeException(), isNull);
         for (final part in dashboardParts) {

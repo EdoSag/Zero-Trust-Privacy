@@ -4,6 +4,7 @@ import '../l10n/l10n.dart';
 import '../rules/checklist.dart';
 import '../rules/finding.dart';
 import '../rules/rules.dart';
+import '../scan/tracker_list.dart';
 
 /// A permission the app shows by a plain name.
 class WatchedPermission {
@@ -152,6 +153,7 @@ extension RuleTexts on Rule {
     Rule.overlay => l.ruleOverlay,
     Rule.installsApps => l.ruleInstallsApps,
     Rule.usageAccess => l.ruleUsageAccess,
+    Rule.trackerCode => l.ruleTrackerCode,
     Rule.oldTarget => l.ruleOldTarget,
     Rule.notUpdated => l.ruleNotUpdated,
     Rule.unused => l.ruleUnused,
@@ -177,6 +179,7 @@ extension RuleTexts on Rule {
     Rule.overlay => l.whyOverlay,
     Rule.installsApps => l.whyInstallsApps,
     Rule.usageAccess => l.whyUsageAccess,
+    Rule.trackerCode => l.whyTrackerCode,
     Rule.oldTarget => l.whyOldTarget,
     Rule.notUpdated => l.whyNotUpdated,
     Rule.unused => l.whyUnused,
@@ -201,6 +204,7 @@ extension RuleTexts on Rule {
     Rule.overlay => Icons.layers_outlined,
     Rule.installsApps => Icons.install_mobile_outlined,
     Rule.usageAccess => Icons.query_stats,
+    Rule.trackerCode => Icons.radar,
     Rule.oldTarget => Icons.history,
     Rule.notUpdated => Icons.update_disabled_outlined,
     Rule.unused => Icons.bedtime_outlined,
@@ -226,6 +230,7 @@ extension RuleTexts on Rule {
     Rule.backgroundLocation ||
     Rule.sms ||
     Rule.callLog ||
+    Rule.trackerCode ||
     Rule.oldTarget ||
     Rule.notUpdated ||
     Rule.unused => Screens.appDetails,
@@ -261,6 +266,10 @@ extension FindingTexts on Finding {
       Rule.overlay => l.findingOverlay(app),
       Rule.installsApps => l.findingInstallsApps(app),
       Rule.usageAccess => l.findingUsageAccess(app),
+      Rule.trackerCode => l.findingTrackerCode(
+        app,
+        int.tryParse(detail ?? '') ?? 1,
+      ),
       Rule.oldTarget => l.findingOldTarget(app, detail ?? '?'),
       Rule.notUpdated => l.findingNotUpdated(
         app,
@@ -326,6 +335,28 @@ extension CheckTexts on CheckId {
     CheckId.networkSensors => l.checkWhyNetworkSensors,
     _ => rule!.why(l),
   };
+}
+
+extension TrackerKindTexts on TrackerKind {
+  String name(AppL10n l) => switch (this) {
+    TrackerKind.ads => l.kindAds,
+    TrackerKind.analytics => l.kindAnalytics,
+    TrackerKind.location => l.kindLocation,
+    TrackerKind.profiling => l.kindProfiling,
+    TrackerKind.identification => l.kindIdentification,
+    TrackerKind.crashReporting => l.kindCrashReporting,
+  };
+}
+
+extension TrackerTexts on Tracker {
+  /// What the tracker is for, as Exodus Privacy files it: "Advertising,
+  /// Analytics". Many entries of the list carry no kind at all.
+  String kindsText(AppL10n l) => kinds.isEmpty
+      ? l.kindUnknown
+      : [
+          for (final kind in TrackerKind.values)
+            if (kinds.contains(kind)) kind.name(l),
+        ].join(', ');
 }
 
 /// A day, written the same way in both languages (2026-11-27).

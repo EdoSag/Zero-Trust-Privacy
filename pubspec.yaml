@@ -1,7 +1,7 @@
 name: zerotrust_privacy
 description: "Zero-Trust Privacy: see how private your phone is, and what to fix first."
 publish_to: none
-version: 0.2.0+2
+version: 0.3.0+3
 
 environment:
   sdk: ^3.10.7
@@ -35,6 +35,8 @@ dependencies:
   url_launcher: ^6.3.1
   # Hands the exported data file to the system share sheet.
   share_plus: ^13.3.1
+  # The app's own folder, for the tracker scan results kept on the phone.
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_test:
@@ -46,3 +48,6 @@ flutter:
   uses-material-design: true
   assets:
     - .env
+    # Exodus Privacy's tracker list (ODbL 1.0), see assets/trackers/NOTICE.md.
+    - assets/trackers/exodus_trackers.json
+    - assets/trackers/NOTICE.md

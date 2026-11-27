@@ -118,6 +118,31 @@ class DexTypes {
     return false;
   }
 
+  /// Whether any type's name has [part] somewhere in it (ASCII bytes such
+  /// as `/TrackerManager`). Walks every name: for the few signatures that
+  /// are not the start of a package.
+  bool hasPart(Uint8List part) {
+    if (part.isEmpty) return true;
+    for (var i = 0; i < typeCount; i++) {
+      final start = _nameStart(i);
+      var end = start;
+      while (end < _bytes.length && _bytes[end] != 0) {
+        end++;
+      }
+      for (var at = start; at + part.length <= end; at++) {
+        var same = true;
+        for (var j = 0; j < part.length; j++) {
+          if (_bytes[at + j] != part[j]) {
+            same = false;
+            break;
+          }
+        }
+        if (same) return true;
+      }
+    }
+    return false;
+  }
+
   /// The same answer as [hasPrefix], found by walking every name. Slower;
   /// kept to check the fast way against in tests and on odd files.
   bool hasPrefixSlow(Uint8List prefix) {

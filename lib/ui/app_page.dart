@@ -8,6 +8,7 @@ import '../rules/checklist.dart';
 import '../rules/rules.dart';
 import 'apps_page.dart';
 import 'texts.dart';
+import 'trackers_page.dart';
 import 'widgets.dart';
 
 /// One app: where it came from, when it was last used, what it holds, and
@@ -40,6 +41,8 @@ class AppPage extends ConsumerWidget {
     final installer = app.installer;
     final lastUsed = phone.lastUsed(package);
     final findings = report.forApp(package);
+    final scan = report.trackers?.scanOf(app);
+    final trackers = report.trackers?.of(app);
     final holds = <(IconData, String)>[
       for (final access in watchedAccess)
         if (holdsAccess(phone, access, app))
@@ -107,6 +110,35 @@ class AppPage extends ConsumerWidget {
           if (findings.isEmpty) Paragraph(l.appNoFindings),
           for (final finding in findings)
             FindingTile(finding, accepted: report.isAccepted(finding)),
+          SectionTitle(l.appTrackersTitle),
+          if (trackers == null)
+            Paragraph(
+              scan == null ? l.appTrackersNotChecked : l.appTrackersUnreadable,
+              key: const Key('app-trackers-unknown'),
+            )
+          else if (trackers.isEmpty)
+            Paragraph(l.appTrackersNone, key: const Key('app-trackers-none'))
+          else ...[
+            Paragraph(l.appTrackersFound),
+            for (final tracker in trackers)
+              ListTile(
+                key: Key('tracker-${tracker.id}'),
+                dense: true,
+                leading: const Icon(Icons.radar),
+                title: Text(tracker.name),
+                subtitle: Text(tracker.kindsText(l)),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => TrackerPage(
+                      trackerId: tracker.id,
+                      // The way here was through this app, system or not.
+                      withSystemApps: app.system,
+                    ),
+                  ),
+                ),
+              ),
+            Paragraph(l.trackersCaveat, small: true),
+          ],
           SectionTitle(l.appHoldsTitle),
           if (holds.isEmpty) Paragraph(l.appHoldsNothing),
           for (final (icon, text) in holds)

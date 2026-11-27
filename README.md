@@ -30,8 +30,20 @@ The first part of the dashboard is here:
   settings Android keeps from apps, to look at and tick off by hand. On
   GrapheneOS that part has a section of its own.
 
-Still to come: tracker code in apps, breach checks, the state of the
-Zero-Trust account, and what changed since last time.
+- **Trackers**: which apps contain code from known advertising, analytics
+  and similar kits. The app reads the class names inside each installed app,
+  on the phone, and compares them with
+  [Exodus Privacy](https://exodus-privacy.eu.org/)'s list, which ships inside
+  the app. Nothing is looked up online. Apps are read in the background, one
+  at a time, and only again after they are updated. The lists go both ways
+  round: what one app contains, and which apps contain one tracker. The
+  wording is "contains code from": finding the code does not prove that it
+  runs, and code with scrambled names cannot be seen. It costs points only
+  where the app also holds a permission that tells it something about you,
+  and never for code that only reports crashes.
+
+Still to come: a daily re-scan with a list of what changed, breach checks,
+and the state of the Zero-Trust account.
 
 ### What leaves the phone
 
@@ -43,6 +55,23 @@ before it is stored or sent, so the server cannot read it.
 What the app reads about the phone (the list of apps, their permissions, the
 settings, when apps were used) is read fresh each time the app opens, kept in
 memory only, and never sent anywhere.
+
+What the tracker scan found is the one thing kept between two openings of the
+app, so that hundreds of apps are not read again each time. It is kept in one
+file in the app's own folder on the phone, sealed with a key made from the
+account's key, and it is not part of the account: it is never synced, not
+even encrypted. Another account on the same phone starts with an empty file.
+
+### The tracker list
+
+`assets/trackers/exodus_trackers.json` is made from the Exodus Privacy
+tracker database, which is under the Open Database License (ODbL 1.0). See
+`assets/trackers/NOTICE.md` for the credit, what was changed, and where the
+copy came from. To take a newer list, save
+`https://reports.exodus-privacy.eu.org/api/trackers` to a file and run
+`dart run tool/build_tracker_list.dart <file> <date>`. The app itself never
+calls Exodus Privacy's servers; the only link to them is a button on a
+tracker's page that opens their description of it in the browser.
 
 The build fails if the app's own list of Android permissions grows beyond the
 ones written down in `.github/workflows/android-apk.yml`.
@@ -60,8 +89,8 @@ new Android version or another phone gets checked. Six steps on one screen:
    a computer unlocks the history of which app used the camera, microphone or
    location.
 4. **Tracker scan.** Reads the class names inside each installed app, on the
-   phone, and looks for a short starter list of well-known advertising and
-   tracking kits. The point of this step is the time a full scan takes.
+   phone, and looks for the trackers of the Exodus Privacy list. The point of
+   this step is the time a full scan takes.
 5. **Android's own screens.** Which system screens the app is allowed to open.
 6. **Send the results.** A summary with counts only, no app names, to share
    or copy. A full report with one line per app can be saved to Downloads.
@@ -77,7 +106,10 @@ new Android version or another phone gets checked. Six steps on one screen:
 | `lib/choices/` | "I'm fine with this" and the ticked checks, kept encrypted in the account. |
 | `lib/ui/` | The screens. |
 | `lib/app/` | Sign-in, lock and links, on the shared Zero-Trust core. |
-| `lib/scan/`, `lib/report/` | The phone test's tracker scan and its reports. |
+| `lib/scan/` | Reading an app's code for tracker names: the zip and DEX readers, the tracker list, the background reader. |
+| `lib/trackers/` | Which apps to read and when, and the results kept on the phone. |
+| `lib/report/` | The phone test's reports. |
+| `assets/trackers/`, `tool/` | The tracker list, its licence notice, and the tool that makes it. |
 | `lib/l10n/` | English and Hebrew. |
 
 ## Building

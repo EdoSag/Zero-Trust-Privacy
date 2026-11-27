@@ -1,17 +1,25 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zerotrust_privacy/scan/apk_scanner.dart';
+import 'package:zerotrust_privacy/scan/tracker_list.dart';
 import 'package:zerotrust_privacy/scan/tracker_scan.dart';
-import 'package:zerotrust_privacy/scan/tracker_signatures.dart';
 
 import 'support/fake_files.dart';
 
 const sdks = [
-  TrackerSdk('Tracker One', TrackerKind.analytics, ['com.example.tracker.']),
-  TrackerSdk('Ad Kit', TrackerKind.ads, ['net.ads.kit.', 'net.ads.old.']),
-  TrackerSdk('Never There', TrackerKind.profiling, ['org.absent.']),
+  Tracker(id: 1, name: 'Tracker One', code: ['com.example.tracker.']),
+  Tracker(id: 2, name: 'Ad Kit', code: ['net.ads.kit.', 'net.ads.old.']),
+  Tracker(id: 3, name: 'Never There', code: ['org.absent.']),
+  // Exodus's three shapes besides a package: one class, a package with no
+  // dot at the end, and the end of a class name under any package.
+  Tracker(id: 4, name: 'One Class', code: ['com.maker.sdk.Collector']),
+  Tracker(id: 5, name: 'No Dot', code: ['com.short']),
+  Tracker(id: 6, name: 'Any Package', code: ['.BeaconManager']),
 ];
+
+Future<List<Tracker>> loadSdks() async => sdks;
 
 void main() {
   late Directory temp;
@@ -83,21 +91,29 @@ void main() {
     expect(result.errors[2], startsWith('gone.apk: '));
   });
 
-  test('the starter list is well formed', () {
-    final names = <String>{};
-    for (final sdk in starterTrackers) {
-      expect(names.add(sdk.name), isTrue, reason: 'twice: ${sdk.name}');
-      expect(sdk.packages, isNotEmpty);
-      for (final package in sdk.packages) {
-        // Ends with a dot, so com.example. cannot match com.examples.
-        expect(package, endsWith('.'), reason: package);
-        expect(package, matches(RegExp(r'^[a-z0-9_.]+$')), reason: package);
-      }
-    }
-    expect(
-      starterTrackers.first.prefixes.first,
-      'Lcom/google/firebase/analytics/'.codeUnits,
-    );
+  test('a signature is matched the way its shape asks', () {
+    Set<String> found(List<String> classes) => scanApkFiles([
+      apk('app${classes.hashCode}.apk', [
+        FakeEntry('classes.dex', fakeDex(classes)),
+      ]),
+    ], sdks).found;
+
+    // One class: the class itself and the classes inside it.
+    expect(found(['Lcom/maker/sdk/Collector;']), {'One Class'});
+    expect(found(['Lcom/maker/sdk/Collector\$Job;']), {'One Class'});
+    expect(found(['Lcom/maker/sdk/Other;']), isEmpty);
+    // No dot at the end: whatever starts with it, as in Exodus.
+    expect(found(['Lcom/short/Main;']), {'No Dot'});
+    expect(found(['Lcom/shorter/Main;']), {'No Dot'});
+    // The start of the name, never the middle of another package.
+    expect(found(['Lxcom/short/Main;']), isEmpty);
+    expect(found(['Lorg/copy/com/short/Main;']), isEmpty);
+    expect(found(['Lorg/copy/net/ads/kit/Show;']), isEmpty);
+    // The end of a class name, under any package.
+    expect(found(['Lorg/any/where/BeaconManager;']), {'Any Package'});
+    expect(found(['Lorg/any/where/BeaconManagers;']), {'Any Package'});
+    expect(found(['Lorg/any/where/MyBeaconManager;']), isEmpty);
+    expect(found(['LBeaconManager;']), isEmpty);
   });
 
   test('the background scan gives one result per app, in order', () async {
@@ -107,7 +123,7 @@ void main() {
     final two = apk('two.apk', [
       FakeEntry('classes.dex', fakeDex(['Lcom/example/app/Main;'])),
     ]);
-    final scans = await const IsolateTrackerScanner(sdks: sdks).scan([
+    final scans = await const IsolateTrackerScanner(loadSdks).scan([
       ScanTarget('app.one', [one]),
       ScanTarget('app.two', [two]),
       ScanTarget('app.gone', ['${temp.path}/gone.apk']),
@@ -119,9 +135,23 @@ void main() {
     expect(scans[2].errors, hasLength(1));
   });
 
+  test('a scan cancelled before it starts leaves nothing running', () async {
+    final asked = Completer<List<Tracker>>();
+    final results = <AppScan>[];
+    final scan = IsolateTrackerScanner(() => asked.future)
+        .scan([
+          ScanTarget('app.gone', ['${temp.path}/gone.apk']),
+        ])
+        .listen(results.add);
+    await scan.cancel();
+    asked.complete(sdks);
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+    expect(results, isEmpty);
+  });
+
   test('the background scan ends at once with nothing to scan', () async {
     expect(
-      await const IsolateTrackerScanner(sdks: sdks).scan([]).toList(),
+      await const IsolateTrackerScanner(loadSdks).scan([]).toList(),
       isEmpty,
     );
   });
