@@ -1,7 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <!-- This app has no INTERNET permission: everything it checks is read
-         on the phone and stays on the phone. -->
+    <!-- Used to sign in and to sync the choices made in the app ("I'm fine
+         with this", ticked checks) with the shared Zero-Trust account,
+         encrypted on the phone first. What the app reads about the phone
+         (the list of apps, their permissions, the settings) is never sent
+         anywhere. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
 
     <!-- The whole point of the app: list every installed app with the
          permissions it holds. -->
@@ -51,6 +56,17 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- Links are handled by the app's own code (app_links, see
+                 IncomingLinks), not Flutter's router: AppGate has no route
+                 for them. -->
+            <meta-data android:name="flutter_deeplinking_enabled" android:value="false"/>
+            <!-- Password-reset emails: https://zerotrust.bz/auth/privacy/#token_hash=… -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https" android:host="zerotrust.bz" android:pathPrefix="/auth/privacy/"/>
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
@@ -67,6 +83,11 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- Opening the privacy policy, terms and support pages. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
         </intent>
     </queries>
 </manifest>

@@ -4,12 +4,14 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import kotlin.concurrent.thread
 
-class MainActivity : FlutterActivity() {
+// FlutterFragmentActivity, not FlutterActivity: the fingerprint prompt that
+// unlocks the app needs a fragment activity.
+class MainActivity : FlutterFragmentActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         val probe = DeviceProbe(applicationContext)
@@ -78,7 +80,17 @@ class MainActivity : FlutterActivity() {
                 Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                 Uri.fromParts("package", packageName ?: this.packageName, null),
             )
-            else -> return mapOf("ok" to false, "error" to "unknown screen: $screen")
+            // Any other screen by Android's own name for it
+            // (android.settings.SECURITY_SETTINGS and so on, listed in
+            // lib/rules/checklist.dart). With an app, the screen opens on
+            // that app's own switch where Android has one.
+            else -> if (screen.contains('.')) {
+                Intent(screen).apply {
+                    if (packageName != null) data = Uri.fromParts("package", packageName, null)
+                }
+            } else {
+                return mapOf("ok" to false, "error" to "unknown screen: $screen")
+            }
         }
         return try {
             startActivity(intent)

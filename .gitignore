@@ -50,3 +50,6 @@ app.*.map.json
 # Local signing details.
 /android/key.properties
 
+
+# Supabase address and public key; written by CI, see the workflow.
+.env

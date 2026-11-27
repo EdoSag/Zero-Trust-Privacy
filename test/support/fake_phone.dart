@@ -108,6 +108,9 @@ class FakeProbe implements DeviceProbe {
   );
   Map<String, ActionResult> screens = {};
   final List<String> opened = [];
+
+  /// Every screen asked for, with the app it was asked to open on.
+  final List<(String, String?)> openedWith = [];
   final List<String> shared = [];
   final Map<String, String> saved = {};
   final List<AccessQuery> asked = [];
@@ -139,6 +142,7 @@ class FakeProbe implements DeviceProbe {
   @override
   Future<ActionResult> openSettings(String screen, {String? package}) async {
     opened.add(screen);
+    openedWith.add((screen, package));
     return screens[screen] ?? const ActionResult(ok: true);
   }
 

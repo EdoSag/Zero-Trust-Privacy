@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zerotrust_privacy/app.dart';
+import 'package:zero_trust_core/zero_trust_core.dart';
+import 'package:zerotrust_privacy/app/privacy_config.dart';
 import 'package:zerotrust_privacy/l10n/generated/app_l10n.dart';
 import 'package:zerotrust_privacy/probe/device_probe.dart';
 import 'package:zerotrust_privacy/ui/phone_test_controller.dart';
+import 'package:zerotrust_privacy/ui/phone_test_page.dart';
 
 import 'support/fake_phone.dart';
 
@@ -48,7 +50,16 @@ void main() {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = Size(size.width, 4000);
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(PrivacyApp(controller: controller, locale: locale));
+    await tester.pumpWidget(
+      MaterialApp(
+        // The suite's real theme, as in the app.
+        theme: ZtTheme.light(accent: privacyAccent),
+        locale: locale,
+        localizationsDelegates: AppL10n.localizationsDelegates,
+        supportedLocales: AppL10n.supportedLocales,
+        home: PhoneTestPage(controller: controller),
+      ),
+    );
     await tester.pumpAndSettle();
   }
 
