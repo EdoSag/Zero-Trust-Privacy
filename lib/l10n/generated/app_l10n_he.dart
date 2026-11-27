@@ -193,5 +193,10 @@ class AppL10nHe extends AppL10n {
   }
 
   @override
+  String stepsMissing(String steps) {
+    return 'עדיין לא הורץ: שלב $steps. הסיכום מועיל יותר איתם.';
+  }
+
+  @override
   String get nothingYet => 'אין עדיין מה לשלוח. קודם יש להריץ את שלב 1.';
 }

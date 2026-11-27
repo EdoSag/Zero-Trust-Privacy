@@ -372,6 +372,8 @@ void main() {
     expect(report, contains('Permission granted from a computer: yes'));
     expect(report, contains('Step plain: REFUSED NoSuchMethodException: x'));
     expect(report, contains('Step exempted: worked'));
+    expect(report, contains('Android answered the call: yes'));
+    expect(report, contains('Rows about other apps: 2'));
     expect(report, contains('History could be read: yes'));
     expect(report, contains('Rows: 2 for 2 apps'));
     expect(report, contains('by kind: android:fine_location 1'));
@@ -427,6 +429,79 @@ void main() {
     );
     // System apps are not listed one by one.
     expect(report, isNot(contains('android.system |')));
+  });
+
+  test(
+    'an empty answer without the grant is not counted as readable',
+    () async {
+      // What a Pixel 10 Pro with GrapheneOS did on 2026-11-27: no error, and
+      // nothing in the list.
+      final controller = PhoneTestController(
+        probe: FakeProbe()
+          ..deepReport = const DeepModeReport(
+            permissionGranted: false,
+            attempts: [DeepModeAttempt(step: 'plain', ok: true)],
+          ),
+        scanner: FakeScanner(),
+        build: '1002',
+      );
+      await controller.readPhone();
+      final report = controller.report(withNames: false);
+      expect(controller.results.deepMode!.works, isFalse);
+      controller.dispose();
+      expect(report, contains('Permission granted from a computer: no'));
+      expect(report, contains('Step plain: worked'));
+      expect(report, contains('Android answered the call: yes'));
+      expect(report, contains('Rows about other apps: 0'));
+      expect(report, contains('History could be read: no'));
+    },
+  );
+
+  test('rows about this app alone do not count either', () {
+    const deep = DeepModeReport(
+      permissionGranted: false,
+      attempts: [DeepModeAttempt(step: 'plain', ok: true)],
+      entries: [
+        OpUse(
+          package: DeepModeReport.ownPackage,
+          op: 'android:camera',
+          lastAccess: 5,
+          lastReject: 0,
+          running: false,
+        ),
+      ],
+    );
+    expect(deep.answered, isTrue);
+    expect(deep.rowsAboutOthers, 0);
+    expect(deep.works, isFalse);
+  });
+
+  test('the report says which steps were not run', () async {
+    final controller = PhoneTestController(
+      probe: FakeProbe(),
+      scanner: FakeScanner(),
+      build: '1002',
+    );
+    expect(
+      controller.report(withNames: false),
+      contains('Steps not run yet: 1, 2, 3, 4, 5\n'),
+    );
+    await controller.readPhone();
+    expect(
+      controller.report(withNames: false),
+      contains('Steps not run yet: 2, 3, 4, 5\n'),
+    );
+    await controller.open('privacy');
+    controller.results.scanTargets = 3;
+    expect(
+      controller.report(withNames: false),
+      contains('Steps not run yet: 2, 3\n'),
+    );
+    controller.dispose();
+    expect(
+      buildReport(await fullResults(), withNames: false),
+      isNot(contains('Steps not run yet')),
+    );
   });
 
   test('a run with only the first step still makes a report', () async {

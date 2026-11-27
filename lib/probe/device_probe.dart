@@ -247,8 +247,19 @@ class DeepModeReport {
   final List<DeepModeAttempt> attempts;
   final List<OpUse> entries;
 
-  /// The history could be read.
-  bool get works => attempts.any((a) => a.ok && a.step != 'exemption');
+  /// Android answered the call without an error. That alone shows nothing:
+  /// without the grant it answers with an empty list (seen on a Pixel 10 Pro
+  /// with GrapheneOS, 2026-11-27).
+  bool get answered => attempts.any((a) => a.ok && a.step != 'exemption');
+
+  /// Rows about apps other than this one.
+  int get rowsAboutOthers =>
+      entries.where((e) => e.package != ownPackage).length;
+
+  /// The history of other apps could really be read.
+  bool get works => answered && rowsAboutOthers > 0;
+
+  static const ownPackage = 'dev.sagron.zerotrustprivacy';
 }
 
 /// Whether Android opened a screen, or did something, when asked.

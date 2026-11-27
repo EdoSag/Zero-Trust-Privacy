@@ -303,6 +303,39 @@ void main() {
     await tester.pumpAndSettle();
   });
 
+  testWidgets('step 6 says when the scan or the screens were passed over', (
+    tester,
+  ) async {
+    await show(tester);
+    expect(find.textContaining('Not run yet'), findsNothing);
+    await tester.tap(key('read'));
+    await tester.pumpAndSettle();
+    final note = find.text(
+      'Not run yet: step 4, 5. The summary is more useful with them.',
+    );
+    expect(note, findsOneWidget);
+    // Above the send buttons, inside the last card.
+    expect(
+      tester.getRect(note).bottom,
+      lessThan(tester.getRect(key('share-summary')).top),
+    );
+    expect(
+      tester.getRect(note).top,
+      greaterThan(tester.getRect(find.text('6. Send the results')).bottom),
+    );
+
+    await tester.tap(key('screen-privacy'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Not run yet: step 4. The summary is more useful with them.'),
+      findsOneWidget,
+    );
+    await tester.tap(key('start-scan'));
+    await tester.pump();
+    expect(find.textContaining('Not run yet'), findsNothing);
+    controller.stopScan();
+  });
+
   testWidgets('nothing is sent before step 1', (tester) async {
     await show(tester);
     await tester.tap(key('share-summary'));

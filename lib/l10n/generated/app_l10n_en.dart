@@ -193,5 +193,10 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
+  String stepsMissing(String steps) {
+    return 'Not run yet: step $steps. The summary is more useful with them.';
+  }
+
+  @override
   String get nothingYet => 'Nothing to send yet. Run step 1 first.';
 }

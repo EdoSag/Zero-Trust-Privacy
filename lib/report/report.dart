@@ -25,6 +25,16 @@ const watchedPermissions = <String, String>{
 const _internet = 'android.permission.INTERNET';
 const _otherSensors = 'android.permission.OTHER_SENSORS';
 
+/// The numbered steps of the phone test that have produced nothing yet.
+/// Step 3 counts as run once the computer's grant is in place.
+List<int> stepsNotRun(PhoneTestResults results) => [
+  if (results.apps == null) 1,
+  if (!(results.usage?.granted ?? false)) 2,
+  if (!(results.deepMode?.permissionGranted ?? false)) 3,
+  if (results.scanTargets == 0) 4,
+  if (results.screens.isEmpty) 5,
+];
+
 /// The results as plain text, to send back for reading.
 ///
 /// With [withNames] false, no app is named: only counts. That is the
@@ -35,6 +45,10 @@ String buildReport(PhoneTestResults results, {required bool withNames}) {
     ..writeln('ZT Privacy phone test, build ${results.build}')
     ..writeln('Taken: ${results.takenAt?.toUtc().toIso8601String() ?? '-'}')
     ..writeln('App names: ${withNames ? 'included' : 'left out'}');
+  final notRun = stepsNotRun(results);
+  if (notRun.isNotEmpty) {
+    out.writeln('Steps not run yet: ${notRun.join(', ')}');
+  }
 
   // Android's refusals are quoted as it worded them, and its wording can
   // name an app or the folder an app is installed in. The summary takes
@@ -321,7 +335,10 @@ void _writeDeepMode(
           : 'Step ${attempt.step}: REFUSED ${clean(attempt.error ?? '')}',
     );
   }
-  out.writeln('History could be read: ${_yesNo(deep.works)}');
+  out
+    ..writeln('Android answered the call: ${_yesNo(deep.answered)}')
+    ..writeln('Rows about other apps: ${deep.rowsAboutOthers}')
+    ..writeln('History could be read: ${_yesNo(deep.works)}');
   if (deep.entries.isEmpty) return;
   final byOp = <String, int>{};
   for (final entry in deep.entries) {

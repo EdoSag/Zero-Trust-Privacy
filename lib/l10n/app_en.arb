@@ -63,5 +63,7 @@
   "@savedFull": {"placeholders": {"name": {"type": "String"}}},
   "actionFailed": "That did not work: {error}",
   "@actionFailed": {"placeholders": {"error": {"type": "String"}}},
+  "stepsMissing": "Not run yet: step {steps}. The summary is more useful with them.",
+  "@stepsMissing": {"placeholders": {"steps": {"type": "String"}}},
   "nothingYet": "Nothing to send yet. Run step 1 first."
 }

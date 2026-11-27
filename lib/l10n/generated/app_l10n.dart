@@ -397,6 +397,12 @@ abstract class AppL10n {
   /// **'That did not work: {error}'**
   String actionFailed(String error);
 
+  /// No description provided for @stepsMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Not run yet: step {steps}. The summary is more useful with them.'**
+  String stepsMissing(String steps);
+
   /// No description provided for @nothingYet.
   ///
   /// In en, this message translates to:
