@@ -373,6 +373,18 @@ void main() {
           ),
           isEmpty,
         );
+        // Usage access is on but Android refused the history: that is "not
+        // known", never "nothing was used".
+        final refusedHistory = phone(
+          apps: apps,
+          lists: lists,
+          usage: const UsageReport(
+            granted: true,
+            appsError: 'IllegalStateException: no stats',
+          ),
+        );
+        expect(ids(refusedHistory), isEmpty);
+        expect(refusedHistory.lastUsed('com.forgotten'), isNull);
       },
     );
 

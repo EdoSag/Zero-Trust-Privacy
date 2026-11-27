@@ -72,10 +72,16 @@ class PhoneSnapshot {
 
   bool get usageGranted => usage?.granted ?? false;
 
+  /// Usage access is on and Android answered with its history. With the
+  /// access on Android can still refuse the question, and "no answer" must
+  /// not read as "no app was used".
+  bool get lastUsedKnown => usageGranted && usage?.appsError == null;
+
   /// When the app was last on screen, in milliseconds since 1970. Zero when
-  /// Android has no record in the last 90 days; null without usage access.
+  /// Android has no record in the last 90 days; null without usage access
+  /// or when Android would not say.
   int? lastUsed(String package) =>
-      usageGranted ? (_lastUsed[package] ?? 0) : null;
+      lastUsedKnown ? (_lastUsed[package] ?? 0) : null;
 
   /// The apps named in one of Android's lists. A list names a part of an
   /// app (`com.app/.Service`); only the app matters here.
@@ -148,6 +154,8 @@ Future<PhoneSnapshot> readPhone(
     return held;
   }, const <String, Set<String>>{});
   final usage = await part<UsageReport?>('usage', probe.usage, null);
+  final usageError = usage?.appsError;
+  if (usageError != null) errors['usage'] = usageError;
 
   return PhoneSnapshot(
     takenAt: now(),

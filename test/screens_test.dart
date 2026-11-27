@@ -510,6 +510,68 @@ void main() {
       expect(world.probe.openedWith, [(Screens.appDetails, 'com.maps')]);
     });
 
+    testWidgets('a refused usage history is not shown as "not used"', (
+      tester,
+    ) async {
+      world.probe.usageReport = const UsageReport(
+        granted: true,
+        appsError: 'IllegalStateException: no stats',
+      );
+      await show(tester, const PrivacyHome(), world);
+      // Same score as with no usage access at all: nothing counts as unused.
+      expect(tester.widget<Text>(byKey('home-score-value')).data, '78');
+      expect(
+        tester.widget<Paragraph>(byKey('home-parts-failed')).text,
+        contains('usage'),
+      );
+      await tester.tap(byKey('home-apps'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('By app'));
+      await tester.pumpAndSettle();
+      await tester.tap(byKey('app-com.notes'));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<Paragraph>(byKey('app-last-used')).text,
+        'Android did not say when it was last used',
+      );
+    });
+
+    testWidgets('an app that loses a permission leaves that list', (
+      tester,
+    ) async {
+      await show(tester, const PrivacyHome(), world);
+      await tester.tap(byKey('home-apps'));
+      await tester.pumpAndSettle();
+      await tester.tap(byKey('permission-android.permission.CAMERA'));
+      await tester.pumpAndSettle();
+      expect(byKey('app-com.notes'), findsOneWidget);
+      await tester.tap(byKey('app-com.notes'));
+      await tester.pumpAndSettle();
+      await tester.tap(byKey('app-open-settings'));
+      await tester.pumpAndSettle();
+
+      // In Android's settings the camera is taken away from the app.
+      world.probe.installed = [
+        for (final app in world.probe.installed)
+          if (app.package == 'com.notes')
+            userApp(
+              'com.notes',
+              'Notes',
+              permissions: {camera: false},
+              uid: 10105,
+            )
+          else
+            app,
+      ];
+      await backFromSettings(tester);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Apps that hold this'), findsOneWidget);
+      expect(byKey('app-com.notes'), findsNothing);
+      expect(find.text('No app of yours holds this.'), findsOneWidget);
+    });
+
     testWidgets('one app without usage access says what is missing', (
       tester,
     ) async {

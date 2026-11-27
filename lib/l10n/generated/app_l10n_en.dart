@@ -900,5 +900,8 @@ class AppL10nEn extends AppL10n {
       'Switch on Usage access to see when it was last used';
 
   @override
+  String get lastUsedUnknown => 'Android did not say when it was last used';
+
+  @override
   String get holdersTitle => 'Apps that hold this';
 }

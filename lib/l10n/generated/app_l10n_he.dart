@@ -895,5 +895,8 @@ class AppL10nHe extends AppL10n {
       'יש להפעיל גישה לנתוני שימוש כדי לראות מתי הייתה בשימוש לאחרונה';
 
   @override
+  String get lastUsedUnknown => 'אנדרואיד לא מסר מתי הייתה בשימוש לאחרונה';
+
+  @override
   String get holdersTitle => 'אפליקציות שמחזיקות בזה';
 }

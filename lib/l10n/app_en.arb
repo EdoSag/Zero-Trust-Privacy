@@ -617,5 +617,6 @@
   "aboutThisApp": "About this app",
   "readingPhone": "Reading the phone…",
   "lastUsedNeedsAccess": "Switch on Usage access to see when it was last used",
+  "lastUsedUnknown": "Android did not say when it was last used",
   "holdersTitle": "Apps that hold this"
 }

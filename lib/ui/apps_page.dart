@@ -66,6 +66,7 @@ class _AppsPageState extends ConsumerState<AppsPage> {
                         _ByPermission(
                           phone: report.phone,
                           apps: _apps(report.phone),
+                          withSystemApps: _showSystem,
                         ),
                         _ByApp(
                           report: report,
@@ -87,21 +88,27 @@ class _AppsPageState extends ConsumerState<AppsPage> {
 }
 
 class _ByPermission extends StatelessWidget {
-  const _ByPermission({required this.phone, required this.apps});
+  const _ByPermission({
+    required this.phone,
+    required this.apps,
+    required this.withSystemApps,
+  });
 
   final PhoneSnapshot phone;
   final List<InstalledApp> apps;
+  final bool withSystemApps;
 
-  void _open(
-    BuildContext context,
-    String title,
-    String? why,
-    List<InstalledApp> holders,
-  ) => Navigator.of(context).push(
-    MaterialPageRoute<void>(
-      builder: (_) => HoldersPage(title: title, why: why, holders: holders),
-    ),
-  );
+  void _open(BuildContext context, String title, String? why, HoldsIt holds) =>
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => HoldersPage(
+            title: title,
+            why: why,
+            holds: holds,
+            withSystemApps: withSystemApps,
+          ),
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +131,7 @@ class _ByPermission extends StatelessWidget {
                 context,
                 access.rule.kind(l),
                 access.rule.why(l),
-                holders,
+                (phone, app) => holdsAccess(phone, access, app),
               ),
             );
           }(),
@@ -143,7 +150,12 @@ class _ByPermission extends StatelessWidget {
               leading: Icon(permission.icon),
               title: Text(permission.name(l)),
               subtitle: Text(l.heldBy(holders.length, asking)),
-              onTap: () => _open(context, permission.name(l), null, holders),
+              onTap: () => _open(
+                context,
+                permission.name(l),
+                null,
+                (_, app) => permission.permissions.any(app.holds),
+              ),
             );
           }(),
         const SizedBox(height: ZtSpacing.lg),
@@ -256,21 +268,40 @@ class AppRow extends StatelessWidget {
 }
 
 /// The apps that hold one permission or one special access.
-class HoldersPage extends StatelessWidget {
+/// Whether an app holds the thing a [HoldersPage] is about.
+typedef HoldsIt = bool Function(PhoneSnapshot phone, InstalledApp app);
+
+/// The apps that hold one permission or access. It asks the phone as it is
+/// now, not as it was when the page opened: an app whose permission was
+/// just taken away in Android's settings leaves the list.
+class HoldersPage extends ConsumerWidget {
   const HoldersPage({
     super.key,
     required this.title,
-    required this.holders,
+    required this.holds,
+    this.withSystemApps = false,
     this.why,
   });
 
   final String title;
   final String? why;
-  final List<InstalledApp> holders;
+  final HoldsIt holds;
+  final bool withSystemApps;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
+    final phone = ref.watch(reportProvider).value?.phone;
+    if (phone == null) {
+      return Scaffold(
+        appBar: AppBar(title: Text(title)),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+    final holders = [
+      for (final app in withSystemApps ? phone.apps : phone.userApps)
+        if (holds(phone, app)) app,
+    ]..sort(_byLabel);
     return Scaffold(
       appBar: AppBar(title: Text(title)),
       body: ListView(

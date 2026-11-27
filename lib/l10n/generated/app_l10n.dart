@@ -1531,6 +1531,12 @@ abstract class AppL10n {
   /// **'Switch on Usage access to see when it was last used'**
   String get lastUsedNeedsAccess;
 
+  /// No description provided for @lastUsedUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Android did not say when it was last used'**
+  String get lastUsedUnknown;
+
   /// No description provided for @holdersTitle.
   ///
   /// In en, this message translates to:

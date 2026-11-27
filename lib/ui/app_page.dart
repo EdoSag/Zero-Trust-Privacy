@@ -95,7 +95,9 @@ class AppPage extends ConsumerWidget {
             Paragraph(l.appUpdatedOn(dayText(app.lastUpdate))),
           Paragraph(
             lastUsed == null
-                ? l.lastUsedNeedsAccess
+                ? (phone.usageGranted
+                      ? l.lastUsedUnknown
+                      : l.lastUsedNeedsAccess)
                 : lastUsed > 0
                 ? l.appLastUsed(dayText(lastUsed))
                 : l.appNotUsed,
