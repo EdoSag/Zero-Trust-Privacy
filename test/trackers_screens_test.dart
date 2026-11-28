@@ -55,7 +55,12 @@ void main() {
       expect(find.text('7 things to look at'), findsOneWidget);
       // Between the two other lists, full width, and no progress bar once
       // the scan is over.
-      expectInOrder(tester, ['home-apps', 'home-trackers', 'home-checklist']);
+      expectInOrder(tester, [
+        'home-apps',
+        'home-trackers',
+        'home-changes',
+        'home-checklist',
+      ]);
       final door = tester.getRect(byKey('home-trackers'));
       expect(door.left, 0);
       expect(door.right, pixel.width);

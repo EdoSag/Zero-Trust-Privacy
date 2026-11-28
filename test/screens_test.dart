@@ -23,6 +23,7 @@ const dashboardParts = [
   'home-usage',
   'home-apps',
   'home-trackers',
+  'home-changes',
   'home-checklist',
 ];
 

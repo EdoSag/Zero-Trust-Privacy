@@ -4,42 +4,103 @@ import 'dart:typed_data';
 
 import 'package:zero_trust_core/zero_trust_core.dart';
 
+import 'changes.dart';
 import 'tracker_results.dart';
 
 /// What earlier scans found, so an app is read again only after it is
-/// updated or the tracker list changes.
+/// updated or the tracker list changes, and what was noticed to change
+/// from one look at the phone to the next.
 class ScanMemory {
   ScanMemory({
     required this.listVersion,
     this.system = '',
+    this.baselined = false,
+    this.seenAt = 0,
     Map<String, AppTrackers>? apps,
-  }) : apps = apps ?? {};
+    Map<String, List<String>>? asked,
+    Set<String>? fresh,
+    List<Change>? changes,
+  }) : apps = apps ?? {},
+       asked = asked ?? {},
+       fresh = fresh ?? {},
+       changes = changes ?? [];
 
   factory ScanMemory.fromJson(Map<String, Object?> json) => ScanMemory(
     listVersion: json['list'] as String? ?? '',
     system: json['system'] as String? ?? '',
+    baselined: json['baselined'] == true,
+    seenAt: (json['seenAt'] as num?)?.toInt() ?? 0,
     apps: {
       for (final entry in ((json['apps'] as Map?) ?? const {}).entries)
         entry.key as String: AppTrackers.fromJson(
           (entry.value as Map).cast<String, Object?>(),
         ),
     },
+    asked: {
+      for (final entry in ((json['asked'] as Map?) ?? const {}).entries)
+        entry.key as String: [
+          for (final name in entry.value as List)
+            if (name is String) name,
+        ],
+    },
+    fresh: {
+      for (final package in (json['fresh'] as List?) ?? const [])
+        if (package is String) package,
+    },
+    changes: [
+      for (final change in (json['changes'] as List?) ?? const [])
+        if (Change.fromJson((change as Map).cast<String, Object?>())
+            case final change?)
+          change,
+    ],
   );
 
-  /// [TrackerList.version] the results were found with.
-  final String listVersion;
+  /// The most changes kept; older ones fall off the end of the list.
+  static const mostChanges = 200;
+
+  /// [TrackerList.version] the results in [apps] were found with.
+  String listVersion;
 
   /// The build of Android the system's own apps were read on. An update
   /// of the phone replaces them without changing their dates.
   String system;
 
-  /// By package name.
+  /// Scan results by package name.
   final Map<String, AppTrackers> apps;
+
+  /// The phone was looked at once before: from then on an app that is not
+  /// in [asked] is a newly installed one.
+  bool baselined;
+
+  /// For each of the user's apps, the sensitive permissions it asked for
+  /// when the phone was last looked at.
+  final Map<String, List<String>> asked;
+
+  /// Newly installed apps whose code was not read yet.
+  final Set<String> fresh;
+
+  /// What changed, oldest first.
+  final List<Change> changes;
+
+  /// When the user last opened the list of changes.
+  int seenAt;
+
+  void addChange(Change change) {
+    changes.add(change);
+    if (changes.length > mostChanges) {
+      changes.removeRange(0, changes.length - mostChanges);
+    }
+  }
 
   Map<String, Object?> toJson() => {
     'list': listVersion,
     'system': system,
+    'baselined': baselined,
+    'seenAt': seenAt,
     'apps': {for (final entry in apps.entries) entry.key: entry.value.toJson()},
+    'asked': asked,
+    'fresh': fresh.toList(),
+    'changes': [for (final change in changes) change.toJson()],
   };
 }
 

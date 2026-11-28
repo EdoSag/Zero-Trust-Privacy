@@ -132,6 +132,18 @@ const watchedAccess = [
   WatchedAccess(Rule.usageAccess, permission: usageAccessPermission),
 ];
 
+/// The plain names of Android permissions, each name once, in the order
+/// the app shows them everywhere else. Two permissions can share a name.
+List<String> permissionNames(AppL10n l, Iterable<String> permissions) {
+  final asked = permissions.toSet();
+  return [
+    for (final access in watchedAccess)
+      if (asked.contains(access.permission)) access.rule.kind(l),
+    for (final permission in watchedPermissions)
+      if (permission.permissions.any(asked.contains)) permission.name(l),
+  ];
+}
+
 extension RuleTexts on Rule {
   /// The kind of finding, for a heading or a line of the score.
   String kind(AppL10n l) => switch (this) {

@@ -1057,4 +1057,60 @@ class AppL10nEn extends AppL10n {
   @override
   String get appTrackersIncomplete =>
       'Part of this app\'s code could not be read, so there may be more.';
+
+  @override
+  String get changesTile => 'What changed';
+
+  @override
+  String changesTileNew(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count new changes since you last looked',
+      one: '1 new change since you last looked',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get changesTileNothingNew => 'Nothing new since you last looked';
+
+  @override
+  String get changesTileNone => 'Nothing has changed yet';
+
+  @override
+  String get changesIntro =>
+      'Each time you open ZT Privacy it compares your apps with the last time. A new app that contains tracker code is listed here, and so is an update that brought tracker code or started asking for a sensitive permission. The list is kept on this phone only.';
+
+  @override
+  String get changesEmpty =>
+      'Nothing has changed since ZT Privacy first looked at this phone.';
+
+  @override
+  String get changesNew => 'New';
+
+  @override
+  String changeNewApp(String app, String names) {
+    return '$app was installed. It contains code from: $names';
+  }
+
+  @override
+  String changeTrackersAdded(String app, String names) {
+    return 'An update of $app added code from: $names';
+  }
+
+  @override
+  String changeTrackersRemoved(String app, String names) {
+    return 'An update of $app removed code from: $names';
+  }
+
+  @override
+  String changePermissionsAdded(String app, String names) {
+    return 'An update of $app started asking for: $names';
+  }
+
+  @override
+  String changeAppGone(String app) {
+    return '$app is no longer on this phone.';
+  }
 }

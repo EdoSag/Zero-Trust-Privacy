@@ -42,8 +42,15 @@ The first part of the dashboard is here:
   where the app also holds a permission that tells it something about you,
   and never for code that only reports crashes.
 
-Still to come: a daily re-scan with a list of what changed, breach checks,
-and the state of the Zero-Trust account.
+- **What changed**: each time the app opens it compares the apps with the
+  last time. A newly installed app that contains tracker code is listed, and
+  so is an update that brought tracker code, dropped some, or started asking
+  for a sensitive permission. The first look at a phone is the starting
+  point, not a change, and a newer tracker list is never told as a change in
+  an app. The dashboard counts what is new since the list was last opened.
+
+Still to come: a daily re-scan in the background with a notification, breach
+checks, and the state of the Zero-Trust account.
 
 ### What leaves the phone
 
@@ -56,11 +63,14 @@ What the app reads about the phone (the list of apps, their permissions, the
 settings, when apps were used) is read fresh each time the app opens, kept in
 memory only, and never sent anywhere.
 
-What the tracker scan found is the one thing kept between two openings of the
-app, so that hundreds of apps are not read again each time. It is kept in one
-file in the app's own folder on the phone, sealed with a key made from the
-account's key, and it is not part of the account: it is never synced, not
-even encrypted. Another account on the same phone starts with an empty file.
+What the tracker scan found is kept between two openings of the app, so that
+hundreds of apps are not read again each time. With it are kept the list of
+what changed (the newest 200), and which sensitive permissions each app asked
+for at the last look, which is what the next look is compared with. All of it
+is in one file in the app's own folder on the phone, sealed with a key made
+from the account's key, and it is not part of the account: it is never
+synced, not even encrypted. Another account on the same phone starts with an
+empty file.
 
 ### The tracker list
 
@@ -107,7 +117,7 @@ new Android version or another phone gets checked. Six steps on one screen:
 | `lib/ui/` | The screens. |
 | `lib/app/` | Sign-in, lock and links, on the shared Zero-Trust core. |
 | `lib/scan/` | Reading an app's code for tracker names: the zip and DEX readers, the tracker list, the background reader. |
-| `lib/trackers/` | Which apps to read and when, and the results kept on the phone. |
+| `lib/trackers/` | Which apps to read and when, what changed since the last look, and the file both are kept in on the phone. |
 | `lib/report/` | The phone test's reports. |
 | `assets/trackers/`, `tool/` | The tracker list, its licence notice, and the tool that makes it. |
 | `lib/l10n/` | English and Hebrew. |

@@ -9,8 +9,10 @@ import 'package:zero_trust_core/zero_trust_core.dart';
 import '../phone/phone_providers.dart';
 import '../phone/phone_snapshot.dart';
 import '../probe/device_probe.dart';
+import '../rules/rules.dart';
 import '../scan/tracker_list.dart';
 import '../scan/tracker_scan.dart';
+import 'changes.dart';
 import 'scan_cache.dart';
 import 'tracker_results.dart';
 
@@ -78,6 +80,9 @@ final scanActivityProvider = Provider<void Function()>(
   },
 );
 
+/// The time, for the date on a change. Tests set their own.
+final scanClockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
+
 /// Where the scan of the phone's apps stands.
 class TrackerScanState {
   const TrackerScanState({
@@ -86,6 +91,8 @@ class TrackerScanState {
     this.total = 0,
     this.scanning = false,
     this.starting = false,
+    this.changes = const [],
+    this.seenAt = 0,
   });
 
   /// What is known so far. Null until the list and the kept results are
@@ -101,13 +108,24 @@ class TrackerScanState {
   final int done;
   final int total;
   final bool scanning;
+
+  /// What changed in the apps from one look at the phone to the next,
+  /// newest first.
+  final List<Change> changes;
+
+  /// When the user last opened the list of changes.
+  final int seenAt;
+
+  /// Changes noticed since the user last opened the list.
+  int get unseenChanges => changes.where((c) => c.at > seenAt).length;
 }
 
 /// Reads the apps that were not read yet, one at a time in the background,
 /// whenever the phone is read: after a first install that is every app,
-/// later only what was installed or updated since.
+/// later only what was installed or updated since. What an install or an
+/// update changed is noted on the way.
 ///
-/// Results are kept in [ScanCache] and never leave the phone.
+/// Results and changes are kept in [ScanCache] and never leave the phone.
 class TrackerScans extends Notifier<TrackerScanState> {
   /// A new [TrackerResults] is given out after this many apps, so that the
   /// score is worked out a few dozen times in a long scan, not hundreds.
@@ -117,11 +135,14 @@ class TrackerScans extends Notifier<TrackerScanState> {
   /// is cut short does not start from nothing.
   static const saveEvery = 25;
 
+  _ScanRun? _run;
+
   @override
   TrackerScanState build() {
     final lists = ref.watch(trackerListProvider);
     final caches = ref.watch(scanCacheProvider);
     final scanner = ref.watch(trackerScannerProvider);
+    _run = null;
     // While one of them is being read again its old value is still there:
     // after a lock that is a cache that was just closed.
     if (lists.isLoading || caches.isLoading) {
@@ -133,13 +154,13 @@ class TrackerScans extends Notifier<TrackerScanState> {
     if (list == null || cache == null) return const TrackerScanState();
 
     // One run for each unlock: locking closes the cache and ends the run.
-    final run = _ScanRun(
+    final run = _run = _ScanRun(
       list: list,
       cache: cache,
       scanner: scanner,
-      now: () => state,
       tell: (next) => state = next,
       activity: ref.read(scanActivityProvider),
+      clock: ref.read(scanClockProvider),
     );
     ref.onDispose(run.stop);
     ref.listen(phoneProvider, (_, next) {
@@ -149,6 +170,9 @@ class TrackerScans extends Notifier<TrackerScanState> {
     unawaited(run.open(ref.read(phoneProvider).value));
     return const TrackerScanState(starting: true);
   }
+
+  /// The user has the list of changes in front of them: none is new now.
+  void markChangesSeen() => _run?.markSeen();
 }
 
 class _ScanRun {
@@ -156,17 +180,17 @@ class _ScanRun {
     required this.list,
     required this.cache,
     required this.scanner,
-    required this.now,
     required this.tell,
     required this.activity,
+    required this.clock,
   });
 
   final TrackerList list;
   final ScanCache cache;
   final TrackerScanner scanner;
-  final TrackerScanState Function() now;
   final void Function(TrackerScanState next) tell;
   final void Function() activity;
+  final DateTime Function() clock;
 
   ScanMemory? _memory;
   PhoneSnapshot? _phone;
@@ -177,6 +201,10 @@ class _ScanRun {
   bool _lookAgain = false;
   bool _stopped = false;
   Future<void> _saved = Future.value();
+
+  /// The results last given out. Kept until [_publish] is asked for new
+  /// ones, so the score is not worked out again for every app.
+  TrackerResults? _given;
 
   void stop() {
     _stopped = true;
@@ -193,17 +221,112 @@ class _ScanRun {
       // Nothing kept that can be read: the apps are read again.
     }
     if (_stopped) return;
-    // Results found with another list say nothing about this one.
-    _memory = kept != null && kept.listVersion == list.version
-        ? kept
-        : ScanMemory(listVersion: list.version);
-    tell(TrackerScanState(results: _results()));
+    final memory = kept ?? ScanMemory(listVersion: list.version);
+    if (memory.listVersion != list.version) {
+      // Results found with another list say nothing about this one. What
+      // changed so far, and what is known about the apps, stays.
+      memory.apps.clear();
+      memory.listVersion = list.version;
+    }
+    _memory = memory;
+    _publish(results: true);
     final latest = _phone;
     if (latest != null) look(latest);
   }
 
-  TrackerResults _results() =>
-      TrackerResults(list: list, apps: Map.unmodifiable({...?_memory?.apps}));
+  /// Tells the app where things stand. [results] gives out a new
+  /// [TrackerResults], which makes the score work itself out again.
+  void _publish({bool results = false}) {
+    final memory = _memory;
+    if (memory == null || _stopped) return;
+    if (results || _given == null) {
+      _given = TrackerResults(list: list, apps: Map.unmodifiable(memory.apps));
+    }
+    tell(
+      TrackerScanState(
+        results: _given,
+        done: _done,
+        total: _total,
+        scanning: _scan != null,
+        changes: List.unmodifiable(memory.changes.reversed),
+        seenAt: memory.seenAt,
+      ),
+    );
+  }
+
+  void markSeen() {
+    final memory = _memory;
+    if (memory == null || _stopped) return;
+    final newest = memory.changes.lastOrNull?.at ?? 0;
+    if (newest <= memory.seenAt) return;
+    memory.seenAt = newest;
+    _save();
+    _publish();
+  }
+
+  void _note(
+    ChangeKind kind,
+    InstalledApp app, {
+    List<int> trackerIds = const [],
+    List<String> permissions = const [],
+  }) {
+    final memory = _memory;
+    if (memory == null) return;
+    final now = clock().millisecondsSinceEpoch;
+    memory.addChange(
+      Change(
+        // Never at or before the moment the list was last opened, even if
+        // the phone's clock was set back: it would not show as new.
+        at: now > memory.seenAt ? now : memory.seenAt + 1,
+        kind: kind,
+        package: app.package,
+        label: app.label,
+        trackerIds: trackerIds,
+        permissions: permissions,
+      ),
+    );
+  }
+
+  /// Compares what the user's apps ask for with the last look. True when
+  /// anything was written down.
+  bool _lookAtPermissions(PhoneSnapshot phone, ScanMemory memory) {
+    var changed = false;
+    final wasBaselined = memory.baselined;
+    final mine = <String>{};
+    for (final app in phone.userApps) {
+      mine.add(app.package);
+      final asks = [
+        for (final permission in permissionsToWatchFor)
+          if (app.requests(permission)) permission,
+      ];
+      final before = memory.asked[app.package];
+      if (before == null) {
+        // Not there at the last look: installed since, unless this is the
+        // first look of all. Its code is read before anything is said.
+        if (wasBaselined) memory.fresh.add(app.package);
+      } else {
+        final added = [
+          for (final permission in asks)
+            if (!before.contains(permission)) permission,
+        ];
+        if (added.isNotEmpty) {
+          _note(ChangeKind.permissionsAdded, app, permissions: added);
+        }
+        if (added.isEmpty && before.length == asks.length) continue;
+      }
+      memory.asked[app.package] = asks;
+      changed = true;
+    }
+    // A removed app is forgotten: installed again, it is a new app.
+    final before = memory.asked.length + memory.fresh.length;
+    memory.asked.removeWhere((package, _) => !mine.contains(package));
+    memory.fresh.removeWhere((package) => !mine.contains(package));
+    if (!wasBaselined) {
+      memory.baselined = true;
+      changed = true;
+    }
+    return changed || memory.asked.length + memory.fresh.length != before;
+  }
 
   /// Starts a scan of the apps of [phone] that were not read yet.
   void look(PhoneSnapshot phone) {
@@ -217,7 +340,7 @@ class _ScanRun {
     }
 
     final installed = phone.byPackage;
-    var changed = false;
+    var changed = _lookAtPermissions(phone, memory);
     final system = phone.fact('build.display') ?? '';
     if (memory.system != system) {
       // The phone was updated: its own apps were replaced under the same
@@ -252,6 +375,7 @@ class _ScanRun {
           trackerIds: const [],
           unreadable: true,
         );
+        memory.fresh.remove(app.package);
         changed = true;
       } else {
         targets.add(ScanTarget(app.package, app.apkPaths));
@@ -262,14 +386,7 @@ class _ScanRun {
     if (targets.isEmpty) {
       if (changed) {
         _save();
-        final state = now();
-        tell(
-          TrackerScanState(
-            results: _results(),
-            done: state.done,
-            total: state.total,
-          ),
-        );
+        _publish(results: true);
       }
       return;
     }
@@ -277,13 +394,6 @@ class _ScanRun {
     _waiting = queued;
     _done = 0;
     _total = targets.length;
-    tell(
-      TrackerScanState(
-        results: changed ? _results() : now().results,
-        total: _total,
-        scanning: true,
-      ),
-    );
     _scan = scanner
         .scan(targets)
         .listen(
@@ -293,13 +403,16 @@ class _ScanRun {
           onError: (Object _) {},
           onDone: _ended,
         );
+    if (changed) _save();
+    _publish(results: changed);
   }
 
   void _took(AppScan scan) {
     final memory = _memory;
     final lastUpdate = _waiting.remove(scan.package);
     if (memory == null || lastUpdate == null || _stopped) return;
-    memory.apps[scan.package] = AppTrackers(
+    final before = memory.apps[scan.package];
+    final found = AppTrackers(
       lastUpdate: lastUpdate,
       trackerIds: [
         for (final name in scan.found)
@@ -310,19 +423,53 @@ class _ScanRun {
       // kept, so the app is never shown as free of tracker code.
       incomplete: scan.dexFiles > 0 && scan.errors.isNotEmpty,
     );
+    memory.apps[scan.package] = found;
+    final noted = _noteWhatChanged(memory, before, found, scan.package);
     _done++;
-    if (_done % TrackerScans.saveEvery == 0) _save();
-    tell(
-      TrackerScanState(
-        results: _done % TrackerScans.publishEvery == 0
-            ? _results()
-            : now().results,
-        done: _done,
-        total: _total,
-        scanning: true,
-      ),
-    );
+    if (noted || _done % TrackerScans.saveEvery == 0) _save();
+    _publish(results: _done % TrackerScans.publishEvery == 0);
     activity();
+  }
+
+  /// Writes down what the reading of one of the user's apps shows to have
+  /// changed. True when something was written down.
+  bool _noteWhatChanged(
+    ScanMemory memory,
+    AppTrackers? before,
+    AppTrackers found,
+    String package,
+  ) {
+    final app = _phone?.byPackage[package];
+    final isNew = memory.fresh.remove(package);
+    if (app == null || app.system || found.unreadable) return false;
+    if (isNew) {
+      if (found.trackerIds.isEmpty) return false;
+      _note(ChangeKind.newAppTrackers, app, trackerIds: found.trackerIds);
+      return true;
+    }
+    // An update: compared with the version before, when both were read
+    // whole. A part that could not be read would look like code that left.
+    if (before == null ||
+        before.unreadable ||
+        before.incomplete ||
+        found.incomplete) {
+      return false;
+    }
+    final added = [
+      for (final id in found.trackerIds)
+        if (!before.trackerIds.contains(id)) id,
+    ];
+    final removed = [
+      for (final id in before.trackerIds)
+        if (!found.trackerIds.contains(id)) id,
+    ];
+    if (added.isNotEmpty) {
+      _note(ChangeKind.trackersAdded, app, trackerIds: added);
+    }
+    if (removed.isNotEmpty) {
+      _note(ChangeKind.trackersRemoved, app, trackerIds: removed);
+    }
+    return added.isNotEmpty || removed.isNotEmpty;
   }
 
   void _ended() {
@@ -337,10 +484,11 @@ class _ScanRun {
         trackerIds: const [],
         unreadable: true,
       );
+      memory.fresh.remove(entry.key);
     }
     _waiting = const {};
     _save();
-    tell(TrackerScanState(results: _results(), done: _done, total: _total));
+    _publish(results: true);
     if (_lookAgain) {
       _lookAgain = false;
       final phone = _phone;

@@ -1,7 +1,7 @@
 name: zerotrust_privacy
 description: "Zero-Trust Privacy: see how private your phone is, and what to fix first."
 publish_to: none
-version: 0.3.0+3
+version: 0.4.0+4
 
 environment:
   sdk: ^3.10.7
