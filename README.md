@@ -140,4 +140,12 @@ flutter build apk --release --target-platform android-arm64
 Every pull request builds an APK you can download from its checks page. A
 push to `main` publishes a signed APK as a GitHub release.
 
+Before the build, the suite's release checks run (`dart run zt_release_checks
+--app privacy`, from Zero-Trust-Core): keys, sync, sign-in, app setup and the
+database rules. After it, the build reads its own APK for tracker code with
+the same list and rules the app uses on other apps
+(`dart run zt_release_checks:zt_tracker_check <apk>`), and fails if it finds
+any. The APK's permissions are checked against a fixed list in the same
+step that builds it.
+
 Work happens on the `Dev` branch. Licensed under the AGPL-3.0.

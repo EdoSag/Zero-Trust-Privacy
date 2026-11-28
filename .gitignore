@@ -53,3 +53,6 @@ app.*.map.json
 
 # Supabase address and public key; written by CI, see the workflow.
 .env
+
+# Written and removed by `dart run zt_release_checks`.
+test/zt_release_checks_test.dart

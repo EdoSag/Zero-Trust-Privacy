@@ -39,6 +39,14 @@ dependencies:
   path_provider: ^2.1.5
 
 dev_dependencies:
+  # The suite's release checks, run by the build before every release. This
+  # package does not depend on the core, so it can be newer than the core
+  # pin above: this commit has the zero-tracker check.
+  zt_release_checks:
+    git:
+      url: https://github.com/EdoSag/Zero-Trust-Core.git
+      path: packages/zt_release_checks
+      ref: e7822ddee5116cb64bb27d68c5a144558824e98e
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
