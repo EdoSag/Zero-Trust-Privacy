@@ -1,5 +1,6 @@
 import '../phone/phone_snapshot.dart';
 import '../probe/device_probe.dart';
+import '../trackers/tracker_results.dart';
 import 'finding.dart';
 
 const _backgroundLocation = 'android.permission.ACCESS_BACKGROUND_LOCATION';
@@ -43,8 +44,10 @@ const oldestCurrentTarget = 30;
 const _ownPackage = DeepModeReport.ownPackage;
 
 /// Everything worth pointing out on this phone, in the order of [Rule].
-List<Finding> findFindings(PhoneSnapshot phone) =>
-    [..._phoneFindings(phone), ..._appFindings(phone)]..sort(_byRuleThenName);
+/// [trackers] is what the scan of the apps knows so far, when it has run.
+List<Finding> findFindings(PhoneSnapshot phone, {TrackerResults? trackers}) =>
+    [..._phoneFindings(phone), ..._appFindings(phone, trackers)]
+      ..sort(_byRuleThenName);
 
 int _byRuleThenName(Finding a, Finding b) {
   final rule = a.rule.index.compareTo(b.rule.index);
@@ -91,7 +94,7 @@ List<Finding> _phoneFindings(PhoneSnapshot phone) {
   ];
 }
 
-List<Finding> _appFindings(PhoneSnapshot phone) {
+List<Finding> _appFindings(PhoneSnapshot phone, TrackerResults? trackers) {
   final accessibility = phone.listed('accessibilityServices');
   final admins = phone.listed('deviceAdmins');
   final listeners = phone.listed('notificationListeners');
@@ -140,6 +143,18 @@ List<Finding> _appFindings(PhoneSnapshot phone) {
     if (special(overlayPermission)) out.add(finding(Rule.overlay));
     if (special(installAppsPermission)) out.add(finding(Rule.installsApps));
     if (special(usageAccessPermission)) out.add(finding(Rule.usageAccess));
+    // Tracker code alone is in most apps and costs nothing. It is worth a
+    // look where the app can also learn something about its user. Code
+    // that only reports crashes is left out.
+    final collecting =
+        trackers
+            ?.of(app)
+            ?.where((tracker) => !tracker.onlyCrashReporting)
+            .length ??
+        0;
+    if (collecting > 0 && sensitivePermissions.any(app.holds)) {
+      out.add(finding(Rule.trackerCode, detail: '$collecting'));
+    }
     if (app.targetSdk > 0 && app.targetSdk < oldestCurrentTarget) {
       out.add(finding(Rule.oldTarget, detail: androidVersionOf(app.targetSdk)));
     }

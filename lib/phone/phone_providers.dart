@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../choices/choices.dart';
 import '../probe/device_probe.dart';
 import '../rules/score.dart';
+import '../trackers/tracker_providers.dart';
 import 'phone_snapshot.dart';
 
 /// How the app reads the phone. Tests put a made-up phone here.
@@ -39,14 +40,23 @@ class Phone extends AsyncNotifier<PhoneSnapshot> {
 
 final phoneProvider = AsyncNotifierProvider<Phone, PhoneSnapshot>(Phone.new);
 
-/// The findings and the score: the phone, less what the user is fine with.
+/// The findings and the score: the phone and what the scan for tracker
+/// code found in its apps, less what the user is fine with.
 final reportProvider = Provider<AsyncValue<PrivacyReport>>((ref) {
   final choices = ref.watch(choicesProvider);
   // Waits for the choices, so the score does not start low and jump up.
   // Choices that cannot be read count as none.
   if (choices.isLoading && !choices.hasValue) return const AsyncLoading();
   final accepted = choices.value?.accepted ?? const <String>{};
+  // The same for what earlier scans found, which is read in a moment.
+  if (ref.watch(trackerScansProvider.select((scan) => scan.starting))) {
+    return const AsyncLoading();
+  }
+  final trackers = ref.watch(trackerResultsProvider);
   return ref
       .watch(phoneProvider)
-      .whenData((phone) => PrivacyReport(phone: phone, accepted: accepted));
+      .whenData(
+        (phone) =>
+            PrivacyReport(phone: phone, accepted: accepted, trackers: trackers),
+      );
 });

@@ -618,5 +618,95 @@
   "readingPhone": "Reading the phone…",
   "lastUsedNeedsAccess": "Switch on Usage access to see when it was last used",
   "lastUsedUnknown": "Android did not say when it was last used",
-  "holdersTitle": "Apps that hold this"
+  "holdersTitle": "Apps that hold this",
+  "trackersTile": "Trackers",
+  "trackersTileWaiting": "Getting ready…",
+  "trackersScanning": "Checking apps: {done} of {total}",
+  "@trackersScanning": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "trackersTileSub": "{count, plural, =0{No tracker code found in your {apps} apps} =1{1 of your {apps} apps contains tracker code} other{{count} of your {apps} apps contain tracker code}}",
+  "@trackersTileSub": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "apps": {
+        "type": "int"
+      }
+    }
+  },
+  "trackersIntro": "A tracker is code made to collect data about you or about how you use an app. ZT Privacy reads the names of the code inside each app on this phone and compares them with Exodus Privacy's list of known trackers. Nothing is sent anywhere: the list is inside this app.",
+  "trackersCaveat": "This shows that the code is in the app. It does not prove that the code runs, or what it sends. Code whose names were scrambled cannot be seen.",
+  "trackersCredit": "Tracker list: Exodus Privacy, under the Open Database License (ODbL 1.0). {count} trackers, newest entry {date}.",
+  "@trackersCredit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "tabByTracker": "By tracker",
+  "appTrackerCount": "{count, plural, =1{Code from 1 tracker} other{Code from {count} trackers}}",
+  "@appTrackerCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appNoTrackers": "No tracker code found",
+  "appNotChecked": "Not checked yet",
+  "appUnreadable": "Its code could not be read",
+  "noTrackersAnywhere": "No tracker code was found in these apps.",
+  "noTrackersYet": "No tracker code found so far.",
+  "trackerInApps": "{count, plural, =1{In 1 app} other{In {count} apps}}",
+  "@trackerInApps": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appTrackersTitle": "Tracker code",
+  "appTrackersFound": "Contains code from:",
+  "appTrackersNone": "No code from known trackers was found in this app.",
+  "appTrackersNotChecked": "This app has not been checked yet.",
+  "appTrackersUnreadable": "ZT Privacy could not read this app's code.",
+  "kindAds": "Advertising",
+  "kindAnalytics": "Analytics",
+  "kindLocation": "Location",
+  "kindProfiling": "Profiling",
+  "kindIdentification": "Identification",
+  "kindCrashReporting": "Crash reporting",
+  "kindUnknown": "Kind not stated",
+  "trackerAppsTitle": "Apps that contain this code",
+  "trackerNoApps": "No app on this list contains it now.",
+  "trackerReadMore": "Read about it at Exodus Privacy",
+  "ruleTrackerCode": "Tracker code with permissions",
+  "findingTrackerCode": "{count, plural, =1{{app} contains code from 1 tracker and holds sensitive permissions} other{{app} contains code from {count} trackers and holds sensitive permissions}}",
+  "@findingTrackerCode": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "whyTrackerCode": "This app contains code made for advertising, analytics or the like, and it also holds a permission that tells it something about you, such as location, contacts, camera or microphone. Finding the code does not prove that it runs or what it sends. The two together are still worth a look: take away the permissions the app does not need, or look for an app without this code.",
+  "appIncomplete": "Part of its code could not be read",
+  "appTrackersIncompleteNone": "No tracker code was found in the part of this app that could be read. The rest could not be read, so it is not known whether the app is free of it.",
+  "appTrackersIncomplete": "Part of this app's code could not be read, so there may be more."
 }

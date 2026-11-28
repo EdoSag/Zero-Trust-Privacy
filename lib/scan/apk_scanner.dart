@@ -1,8 +1,7 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'dex_types.dart';
-import 'tracker_signatures.dart';
+import 'tracker_list.dart';
 import 'zip_reader.dart';
 
 /// What a scan of one app's files found.
@@ -21,11 +20,16 @@ class ApkScanResult {
   final List<String> errors = [];
 }
 
-/// A [TrackerSdk] with its package prefixes ready to compare.
+/// A [Tracker] with its names ready to compare.
 class _Wanted {
-  _Wanted(this.sdk) : prefixes = sdk.prefixes;
-  final TrackerSdk sdk;
-  final List<Uint8List> prefixes;
+  _Wanted(this.tracker)
+    : signatures = [for (final name in tracker.code) CodeSignature(name)];
+  final Tracker tracker;
+  final List<CodeSignature> signatures;
+
+  bool isIn(DexTypes dex) => signatures.any(
+    (s) => s.anywhere ? dex.hasPart(s.bytes) : dex.hasPrefix(s.bytes),
+  );
 }
 
 final _dexName = RegExp(r'^classes\d*\.dex$');
@@ -34,7 +38,7 @@ final _dexName = RegExp(r'^classes\d*\.dex$');
 /// than unpacked into memory.
 const _largestDex = 96 * 1024 * 1024;
 
-/// Looks for the code of [sdks] in an app, given the paths of its APK files
+/// Looks for the code of [trackers] in an app, given the paths of its APK files
 /// (the base file and any splits).
 ///
 /// This reads class names only. It says a kit's code is in the app, not
@@ -42,9 +46,9 @@ const _largestDex = 96 * 1024 * 1024;
 /// scrambled.
 ///
 /// Synchronous and heavy: call it from a background isolate.
-ApkScanResult scanApkFiles(List<String> paths, List<TrackerSdk> sdks) {
+ApkScanResult scanApkFiles(List<String> paths, List<Tracker> trackers) {
   final result = ApkScanResult();
-  final wanted = [for (final sdk in sdks) _Wanted(sdk)];
+  final wanted = [for (final tracker in trackers) _Wanted(tracker)];
   for (final path in paths) {
     RandomAccessFile? file;
     try {
@@ -63,10 +67,8 @@ ApkScanResult scanApkFiles(List<String> paths, List<TrackerSdk> sdks) {
           result.dexBytes += bytes.length;
           result.types += dex.typeCount;
           for (final item in wanted) {
-            if (result.found.contains(item.sdk.name)) continue;
-            if (item.prefixes.any(dex.hasPrefix)) {
-              result.found.add(item.sdk.name);
-            }
+            if (result.found.contains(item.tracker.name)) continue;
+            if (item.isIn(dex)) result.found.add(item.tracker.name);
           }
         } on FormatException catch (e) {
           result.errors.add('${entry.name}: ${e.message}');

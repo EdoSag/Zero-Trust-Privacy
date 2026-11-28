@@ -5,6 +5,7 @@ import 'package:zerotrust_privacy/rules/checklist.dart';
 import 'package:zerotrust_privacy/rules/finding.dart';
 import 'package:zerotrust_privacy/rules/rules.dart';
 import 'package:zerotrust_privacy/rules/score.dart';
+import 'package:zerotrust_privacy/trackers/tracker_results.dart';
 
 import 'support/fake_phone.dart';
 
@@ -417,6 +418,147 @@ void main() {
         expect(found, isEmpty);
       },
     );
+  });
+
+  group('tracker code', () {
+    final maps = userApp('com.maps', permissions: {fineLocation: true});
+    final notes = userApp('com.notes', permissions: {camera: true});
+    final game = userApp('com.game');
+    final asked = userApp('com.asked', permissions: {camera: false});
+
+    /// Scan results: tracker ids by package, found in the app as it is.
+    TrackerResults found(
+      Map<InstalledApp, List<int>> apps, {
+      Set<String> unreadable = const {},
+    }) => TrackerResults(
+      list: someTrackers(),
+      apps: {
+        for (final entry in apps.entries)
+          entry.key.package: AppTrackers(
+            lastUpdate: entry.key.lastUpdate,
+            trackerIds: entry.value,
+            unreadable: unreadable.contains(entry.key.package),
+          ),
+      },
+    );
+
+    List<Finding> about(PhoneSnapshot phone, TrackerResults trackers) =>
+        findFindings(phone, trackers: trackers);
+
+    test('counts where the app also holds a sensitive permission', () {
+      final all = phone(apps: [maps, notes, game, asked]);
+      final findings = about(
+        all,
+        found({
+          maps: [adNetwork.id, appStats.id],
+          // Holds nothing that tells it about its user.
+          game: [adNetwork.id, mysteryKit.id],
+          // Asked for the camera and did not get it.
+          asked: [adNetwork.id],
+          notes: [],
+        }),
+      );
+      expect(findings.map((f) => f.id), ['trackerCode:com.maps']);
+      expect(findings.single.detail, '2');
+      expect(findings.single.label, 'Label of com.maps');
+    });
+
+    test('code that only reports crashes is not held against an app', () {
+      final all = phone(apps: [maps, notes]);
+      final findings = about(
+        all,
+        found({
+          maps: [crashCatcher.id],
+          notes: [crashCatcher.id, mysteryKit.id],
+        }),
+      );
+      // Notes: the kit of no stated kind counts, the crash reporter not.
+      expect(findings.map((f) => f.id), ['trackerCode:com.notes']);
+      expect(findings.single.detail, '1');
+    });
+
+    test('nothing is said before an app was read, or when it could not '
+        'be', () {
+      final all = phone(apps: [maps, notes]);
+      expect(findFindings(all), isEmpty);
+      expect(about(all, found({})), isEmpty);
+      expect(
+        about(
+          all,
+          found(
+            {
+              maps: [adNetwork.id],
+            },
+            unreadable: {'com.maps'},
+          ),
+        ),
+        isEmpty,
+      );
+    });
+
+    test('results for an older version of the app do not count', () {
+      final updated = userApp(
+        'com.maps',
+        permissions: {fineLocation: true},
+        lastUpdate: maps.lastUpdate + 1,
+      );
+      final results = found({
+        maps: [adNetwork.id],
+      });
+      expect(about(phone(apps: [updated]), results), isEmpty);
+      expect(results.scanOf(updated), isNull);
+      expect(results.of(updated), isNull);
+    });
+
+    test('the trackers of an app come by name; unknown numbers are left '
+        'out', () {
+      final results = found({
+        maps: [appStats.id, 999, adNetwork.id],
+      });
+      expect(results.of(maps)!.map((t) => t.name), ['Ad Network', 'App Stats']);
+    });
+
+    test('two points an app, eight at most, and none once accepted', () {
+      final apps = [
+        for (var i = 0; i < 6; i++)
+          userApp('com.app$i', permissions: {camera: true}),
+      ];
+      final results = found({
+        for (final app in apps) app: [adNetwork.id],
+      });
+      final all = phone(apps: apps);
+      expect(
+        PrivacyReport(phone: all, accepted: const {}, trackers: results).score,
+        92,
+      );
+      final report = PrivacyReport(
+        phone: all,
+        accepted: {
+          for (final app in apps.skip(1)) 'trackerCode:${app.package}',
+        },
+        trackers: results,
+      );
+      expect(report.score, 98);
+      expect(report.findings.length, 6);
+    });
+
+    test('system apps and switched-off apps are not counted', () {
+      final system = userApp(
+        'android.thing',
+        permissions: {camera: true},
+        system: true,
+      );
+      final off = userApp(
+        'com.off',
+        permissions: {camera: true},
+        enabled: false,
+      );
+      final results = found({
+        system: [adNetwork.id],
+        off: [adNetwork.id],
+      });
+      expect(about(phone(apps: [system, off]), results), isEmpty);
+    });
   });
 
   group('the score', () {

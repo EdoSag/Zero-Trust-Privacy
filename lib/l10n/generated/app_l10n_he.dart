@@ -899,4 +899,156 @@ class AppL10nHe extends AppL10n {
 
   @override
   String get holdersTitle => 'אפליקציות שמחזיקות בזה';
+
+  @override
+  String get trackersTile => 'רכיבי מעקב';
+
+  @override
+  String get trackersTileWaiting => 'מתכונן…';
+
+  @override
+  String trackersScanning(int done, int total) {
+    return 'בודק אפליקציות: $done מתוך $total';
+  }
+
+  @override
+  String trackersTileSub(int count, int apps) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count מתוך $apps האפליקציות שלך מכילות קוד מעקב',
+      one: 'אפליקציה אחת מתוך $apps מכילה קוד מעקב',
+      zero: 'לא נמצא קוד מעקב ב-$apps האפליקציות שלך',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get trackersIntro =>
+      'רכיב מעקב הוא קוד שנועד לאסוף מידע עליך או על אופן השימוש שלך באפליקציה. ZT Privacy קורא את שמות הקוד שבתוך כל אפליקציה בטלפון הזה ומשווה אותם לרשימת רכיבי המעקב המוכרים של Exodus Privacy. שום דבר לא נשלח לשום מקום: הרשימה נמצאת בתוך האפליקציה.';
+
+  @override
+  String get trackersCaveat =>
+      'הבדיקה מראה שהקוד נמצא באפליקציה. היא לא מוכיחה שהקוד פועל, או מה הוא שולח. קוד ששמותיו עורבלו אינו נראה.';
+
+  @override
+  String trackersCredit(int count, String date) {
+    return 'רשימת רכיבי המעקב: Exodus Privacy, ברישיון Open Database License (ODbL 1.0). $count רכיבי מעקב, הרשומה החדשה ביותר $date.';
+  }
+
+  @override
+  String get tabByTracker => 'לפי רכיב מעקב';
+
+  @override
+  String appTrackerCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'קוד של $count רכיבי מעקב',
+      one: 'קוד של רכיב מעקב אחד',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get appNoTrackers => 'לא נמצא קוד מעקב';
+
+  @override
+  String get appNotChecked => 'עדיין לא נבדקה';
+
+  @override
+  String get appUnreadable => 'לא ניתן היה לקרוא את הקוד שלה';
+
+  @override
+  String get noTrackersAnywhere => 'לא נמצא קוד מעקב באפליקציות האלה.';
+
+  @override
+  String get noTrackersYet => 'עד עכשיו לא נמצא קוד מעקב.';
+
+  @override
+  String trackerInApps(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'ב-$count אפליקציות',
+      one: 'באפליקציה אחת',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get appTrackersTitle => 'קוד מעקב';
+
+  @override
+  String get appTrackersFound => 'מכילה קוד של:';
+
+  @override
+  String get appTrackersNone =>
+      'לא נמצא באפליקציה הזו קוד של רכיבי מעקב מוכרים.';
+
+  @override
+  String get appTrackersNotChecked => 'האפליקציה הזו עדיין לא נבדקה.';
+
+  @override
+  String get appTrackersUnreadable =>
+      'ZT Privacy לא הצליח לקרוא את הקוד של האפליקציה הזו.';
+
+  @override
+  String get kindAds => 'פרסום';
+
+  @override
+  String get kindAnalytics => 'ניתוח שימוש';
+
+  @override
+  String get kindLocation => 'מיקום';
+
+  @override
+  String get kindProfiling => 'בניית פרופיל';
+
+  @override
+  String get kindIdentification => 'זיהוי';
+
+  @override
+  String get kindCrashReporting => 'דיווח על קריסות';
+
+  @override
+  String get kindUnknown => 'הסוג לא צוין';
+
+  @override
+  String get trackerAppsTitle => 'אפליקציות שמכילות את הקוד הזה';
+
+  @override
+  String get trackerNoApps => 'אף אפליקציה ברשימה לא מכילה אותו כרגע.';
+
+  @override
+  String get trackerReadMore => 'לקרוא עליו באתר Exodus Privacy';
+
+  @override
+  String get ruleTrackerCode => 'קוד מעקב עם הרשאות';
+
+  @override
+  String findingTrackerCode(String app, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$app מכילה קוד של $count רכיבי מעקב ומחזיקה בהרשאות רגישות',
+      one: '$app מכילה קוד של רכיב מעקב אחד ומחזיקה בהרשאות רגישות',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get whyTrackerCode =>
+      'האפליקציה הזו מכילה קוד שנועד לפרסום, לניתוח שימוש וכדומה, והיא גם מחזיקה בהרשאה שמלמדת אותה משהו עליך, כמו מיקום, אנשי קשר, מצלמה או מיקרופון. מציאת הקוד לא מוכיחה שהוא פועל או מה הוא שולח. ובכל זאת השילוב שווה בדיקה: אפשר לבטל הרשאות שהאפליקציה לא צריכה, או לחפש אפליקציה בלי הקוד הזה.';
+
+  @override
+  String get appIncomplete => 'חלק מהקוד שלה לא נקרא';
+
+  @override
+  String get appTrackersIncompleteNone =>
+      'לא נמצא קוד מעקב בחלק של האפליקציה שניתן היה לקרוא. את השאר לא ניתן היה לקרוא, ולכן לא ידוע אם האפליקציה נקייה ממנו.';
+
+  @override
+  String get appTrackersIncomplete =>
+      'חלק מהקוד של האפליקציה לא נקרא, ולכן ייתכן שיש עוד.';
 }

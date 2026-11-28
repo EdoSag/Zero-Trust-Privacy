@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:isolate';
 
 import 'apk_scanner.dart';
-import 'tracker_signatures.dart';
+import 'tracker_list.dart';
 
 /// One app to scan: its package name and the paths of its APK files.
 class ScanTarget {
@@ -41,17 +41,21 @@ abstract class TrackerScanner {
 /// Scans in a background isolate, one app at a time, so the screen stays
 /// smooth however many apps there are.
 class IsolateTrackerScanner implements TrackerScanner {
-  const IsolateTrackerScanner({this.sdks = starterTrackers});
+  const IsolateTrackerScanner(this.trackers);
 
-  final List<TrackerSdk> sdks;
+  /// The kits to look for. Asked for when a scan starts, since the list is
+  /// read from the app's files.
+  final Future<List<Tracker>> Function() trackers;
 
   @override
   Stream<AppScan> scan(List<ScanTarget> targets) {
     Isolate? isolate;
+    var stopped = false;
     final port = ReceivePort();
     late final StreamController<AppScan> controller;
 
     void stop() {
+      stopped = true;
       isolate?.kill(priority: Isolate.immediate);
       isolate = null;
       port.close();
@@ -72,7 +76,10 @@ class IsolateTrackerScanner implements TrackerScanner {
           }
         });
         try {
-          isolate = await Isolate.spawn(
+          final wanted = await trackers();
+          // Cancelled while the list was being read: start nothing.
+          if (stopped) return;
+          final started = await Isolate.spawn(
             _scanAll,
             [
               port.sendPort,
@@ -80,13 +87,18 @@ class IsolateTrackerScanner implements TrackerScanner {
                 for (final target in targets) [target.package, target.paths],
               ],
               [
-                for (final sdk in sdks)
-                  [sdk.name, sdk.kind.index, sdk.packages],
+                for (final tracker in wanted) [tracker.name, tracker.code],
               ],
             ],
             onExit: port.sendPort,
             onError: port.sendPort,
           );
+          if (stopped) {
+            // Cancelled while it was starting: do not leave it running.
+            started.kill(priority: Isolate.immediate);
+          } else {
+            isolate = started;
+          }
         } catch (e, stack) {
           stop();
           controller.addError(e, stack);
@@ -106,12 +118,13 @@ const _resultLength = 7;
 void _scanAll(List<Object?> arguments) {
   final port = arguments[0] as SendPort;
   final targets = arguments[1] as List;
-  final sdks = [
-    for (final sdk in arguments[2] as List)
-      TrackerSdk(
-        (sdk as List)[0] as String,
-        TrackerKind.values[sdk[1] as int],
-        (sdk[2] as List).cast<String>(),
+  // Only the names matter here; the id is not sent across.
+  final trackers = [
+    for (final (index, tracker) in (arguments[2] as List).indexed)
+      Tracker(
+        id: index,
+        name: (tracker as List)[0] as String,
+        code: (tracker[1] as List).cast<String>(),
       ),
   ];
   final clock = Stopwatch();
@@ -123,7 +136,7 @@ void _scanAll(List<Object?> arguments) {
       ..start();
     ApkScanResult result;
     try {
-      result = scanApkFiles(paths, sdks);
+      result = scanApkFiles(paths, trackers);
     } catch (e) {
       // One unreadable app must not end the scan of the rest.
       result = ApkScanResult()..errors.add(e.toString());

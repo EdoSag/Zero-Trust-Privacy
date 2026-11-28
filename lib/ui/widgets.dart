@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:zero_trust_core/zero_trust_core.dart';
 
 import '../l10n/l10n.dart';
@@ -30,6 +31,27 @@ Future<void> openSystemScreen(
       .open(screen, package: package);
   if (!result.ok && context.mounted) {
     showNote(context, l.openFailed(result.error ?? ''));
+  }
+}
+
+/// Opens a web page in the phone's browser. Tests put their own here.
+final linkOpenerProvider = Provider<Future<bool> Function(Uri url)>(
+  (ref) =>
+      (url) => launchUrl(url, mode: LaunchMode.externalApplication),
+);
+
+/// Opens [url] in the browser and says so when nothing could open it.
+Future<void> openLink(BuildContext context, WidgetRef ref, Uri url) async {
+  final l = context.l10n;
+  var opened = false;
+  Object? problem;
+  try {
+    opened = await ref.read(linkOpenerProvider)(url);
+  } on Object catch (e) {
+    problem = e;
+  }
+  if (!opened && context.mounted) {
+    showNote(context, l.openFailed('${problem ?? url}'));
   }
 }
 

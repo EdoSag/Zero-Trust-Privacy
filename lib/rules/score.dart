@@ -1,4 +1,5 @@
 import '../phone/phone_snapshot.dart';
+import '../trackers/tracker_results.dart';
 import 'finding.dart';
 import 'rules.dart';
 
@@ -27,11 +28,18 @@ class ScoreLine {
 
 /// The phone, what was found on it, and the score that follows.
 class PrivacyReport {
-  PrivacyReport({required this.phone, required Set<String> accepted})
-    : findings = findFindings(phone),
-      _accepted = accepted;
+  PrivacyReport({
+    required this.phone,
+    required Set<String> accepted,
+    this.trackers,
+  }) : findings = findFindings(phone, trackers: trackers),
+       _accepted = accepted;
 
   final PhoneSnapshot phone;
+
+  /// What the scan for tracker code knows so far. Null before the first
+  /// results are in.
+  final TrackerResults? trackers;
   final List<Finding> findings;
   final Set<String> _accepted;
 

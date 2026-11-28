@@ -7,7 +7,7 @@ import 'package:zero_trust_core/zero_trust_core.dart';
 import '../app_info.dart';
 import '../l10n/l10n.dart';
 import '../phone/system_screens.dart';
-import '../scan/tracker_scan.dart';
+import '../trackers/tracker_providers.dart';
 import 'phone_test_controller.dart';
 import 'phone_test_page.dart';
 
@@ -69,7 +69,7 @@ class PhoneTestScreen extends ConsumerStatefulWidget {
 class _PhoneTestScreenState extends ConsumerState<PhoneTestScreen> {
   late final PhoneTestController _controller = PhoneTestController(
     probe: AwayAwareProbe(ref.read(systemScreensProvider)),
-    scanner: const IsolateTrackerScanner(),
+    scanner: ref.read(trackerScannerProvider),
     build: appBuild,
   )..addListener(_active);
 

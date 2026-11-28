@@ -11,6 +11,9 @@ import 'package:zerotrust_privacy/l10n/l10n.dart';
 import 'package:zerotrust_privacy/phone/phone_providers.dart';
 import 'package:zerotrust_privacy/phone/system_screens.dart';
 import 'package:zerotrust_privacy/probe/device_probe.dart';
+import 'package:zerotrust_privacy/scan/tracker_scan.dart';
+import 'package:zerotrust_privacy/trackers/tracker_providers.dart';
+import 'package:zerotrust_privacy/ui/widgets.dart';
 
 import 'fake_phone.dart';
 
@@ -159,15 +162,37 @@ class MemoryChoices implements ChoicesRepository {
 
 /// What a test can look at.
 class World {
-  World({FakeProbe? probe}) : probe = probe ?? pixelLikePhone();
+  World({FakeProbe? probe, TrackerScanner? scanner})
+    : probe = probe ?? pixelLikePhone(),
+      scanner = scanner ?? InstantScanner();
 
   final FakeProbe probe;
   final choices = MemoryChoices();
+
+  /// Reads the apps for tracker code. An [InstantScanner] unless the test
+  /// gave its own; [found] says what it finds.
+  final TrackerScanner scanner;
+  final scans = MemoryScanCache();
+
+  /// Web pages the app asked the browser to open.
+  final links = <Uri>[];
+
+  /// Tracker names by package, for the [InstantScanner].
+  Map<String, List<String>> get found => (scanner as InstantScanner).found;
 
   List<Override> get overrides => [
     ztAppConfigProvider.overrideWithValue(privacyAppConfig),
     deviceProbeProvider.overrideWithValue(probe),
     choicesRepositoryProvider.overrideWithValue(choices),
+    trackerListProvider.overrideWith((ref) async => someTrackers()),
+    scanCacheProvider.overrideWith((ref) async => scans),
+    trackerScannerProvider.overrideWithValue(scanner),
+    // No vault in a test: nothing to keep awake during a scan.
+    scanActivityProvider.overrideWithValue(() {}),
+    linkOpenerProvider.overrideWithValue((url) async {
+      links.add(url);
+      return true;
+    }),
     // No vault in a test: nothing to keep open while Settings is in front.
     systemScreensProvider.overrideWith((ref) => SystemScreens(probe)),
   ];

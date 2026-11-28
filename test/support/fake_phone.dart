@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:zerotrust_privacy/probe/device_probe.dart';
+import 'package:zerotrust_privacy/scan/tracker_list.dart';
 import 'package:zerotrust_privacy/scan/tracker_scan.dart';
+import 'package:zerotrust_privacy/trackers/scan_cache.dart';
 
 const fineLocation = 'android.permission.ACCESS_FINE_LOCATION';
 const backgroundLocation = 'android.permission.ACCESS_BACKGROUND_LOCATION';
@@ -193,4 +195,87 @@ class FakeScanner implements TrackerScanner {
   );
 
   Future<void> finish() => controller!.close();
+}
+
+/// A short tracker list of made-up kits, one of each sort the screens
+/// treat differently.
+const adNetwork = Tracker(
+  id: 11,
+  name: 'Ad Network',
+  code: ['com.adnetwork.'],
+  kinds: {TrackerKind.ads},
+  website: 'https://adnetwork.example',
+);
+const appStats = Tracker(
+  id: 12,
+  name: 'App Stats',
+  code: ['com.appstats.'],
+  kinds: {TrackerKind.analytics, TrackerKind.profiling},
+);
+const crashCatcher = Tracker(
+  id: 13,
+  name: 'Crash Catcher',
+  code: ['com.crashcatcher.'],
+  kinds: {TrackerKind.crashReporting},
+);
+const mysteryKit = Tracker(id: 14, name: 'Mystery Kit', code: ['com.mystery.']);
+
+TrackerList someTrackers() => TrackerList(
+  trackers: const [adNetwork, appStats, crashCatcher, mysteryKit],
+  newestEntry: '2023-12-05',
+  attribution: 'Made up for tests',
+);
+
+/// A scanner that answers at once from [found]: tracker names by package.
+/// An app that is not named has no tracker code.
+class InstantScanner implements TrackerScanner {
+  Map<String, List<String>> found = {};
+
+  /// Packages whose code cannot be read.
+  Set<String> unreadable = {};
+
+  /// Packages with one part read and another that failed.
+  Set<String> incomplete = {};
+
+  /// Every package asked for, in order, over all scans.
+  final List<String> scanned = [];
+
+  @override
+  Stream<AppScan> scan(List<ScanTarget> targets) {
+    scanned.addAll([for (final target in targets) target.package]);
+    return Stream.fromIterable([
+      for (final target in targets)
+        AppScan(
+          package: target.package,
+          found: found[target.package] ?? const [],
+          dexFiles: unreadable.contains(target.package) ? 0 : 1,
+          dexBytes: 1024,
+          types: 10,
+          errors: unreadable.contains(target.package)
+              ? const ['base.apk: Permission denied']
+              : incomplete.contains(target.package)
+              ? const ['classes2.dex: too large to read']
+              : const [],
+          elapsed: const Duration(milliseconds: 1),
+        ),
+    ]);
+  }
+}
+
+/// Scan results kept in memory, as the sealed file would keep them.
+class MemoryScanCache implements ScanCache {
+  ScanMemory? kept;
+  int saves = 0;
+  Object? failure;
+
+  @override
+  Future<ScanMemory?> load() async =>
+      kept == null ? null : ScanMemory.fromJson(kept!.toJson());
+
+  @override
+  Future<void> save(ScanMemory memory) async {
+    if (failure != null) throw failure!;
+    saves++;
+    kept = ScanMemory.fromJson(memory.toJson());
+  }
 }

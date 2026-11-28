@@ -1542,6 +1542,222 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Apps that hold this'**
   String get holdersTitle;
+
+  /// No description provided for @trackersTile.
+  ///
+  /// In en, this message translates to:
+  /// **'Trackers'**
+  String get trackersTile;
+
+  /// No description provided for @trackersTileWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting ready…'**
+  String get trackersTileWaiting;
+
+  /// No description provided for @trackersScanning.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking apps: {done} of {total}'**
+  String trackersScanning(int done, int total);
+
+  /// No description provided for @trackersTileSub.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No tracker code found in your {apps} apps} =1{1 of your {apps} apps contains tracker code} other{{count} of your {apps} apps contain tracker code}}'**
+  String trackersTileSub(int count, int apps);
+
+  /// No description provided for @trackersIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'A tracker is code made to collect data about you or about how you use an app. ZT Privacy reads the names of the code inside each app on this phone and compares them with Exodus Privacy\'s list of known trackers. Nothing is sent anywhere: the list is inside this app.'**
+  String get trackersIntro;
+
+  /// No description provided for @trackersCaveat.
+  ///
+  /// In en, this message translates to:
+  /// **'This shows that the code is in the app. It does not prove that the code runs, or what it sends. Code whose names were scrambled cannot be seen.'**
+  String get trackersCaveat;
+
+  /// No description provided for @trackersCredit.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracker list: Exodus Privacy, under the Open Database License (ODbL 1.0). {count} trackers, newest entry {date}.'**
+  String trackersCredit(int count, String date);
+
+  /// No description provided for @tabByTracker.
+  ///
+  /// In en, this message translates to:
+  /// **'By tracker'**
+  String get tabByTracker;
+
+  /// No description provided for @appTrackerCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Code from 1 tracker} other{Code from {count} trackers}}'**
+  String appTrackerCount(int count);
+
+  /// No description provided for @appNoTrackers.
+  ///
+  /// In en, this message translates to:
+  /// **'No tracker code found'**
+  String get appNoTrackers;
+
+  /// No description provided for @appNotChecked.
+  ///
+  /// In en, this message translates to:
+  /// **'Not checked yet'**
+  String get appNotChecked;
+
+  /// No description provided for @appUnreadable.
+  ///
+  /// In en, this message translates to:
+  /// **'Its code could not be read'**
+  String get appUnreadable;
+
+  /// No description provided for @noTrackersAnywhere.
+  ///
+  /// In en, this message translates to:
+  /// **'No tracker code was found in these apps.'**
+  String get noTrackersAnywhere;
+
+  /// No description provided for @noTrackersYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No tracker code found so far.'**
+  String get noTrackersYet;
+
+  /// No description provided for @trackerInApps.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{In 1 app} other{In {count} apps}}'**
+  String trackerInApps(int count);
+
+  /// No description provided for @appTrackersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracker code'**
+  String get appTrackersTitle;
+
+  /// No description provided for @appTrackersFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Contains code from:'**
+  String get appTrackersFound;
+
+  /// No description provided for @appTrackersNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No code from known trackers was found in this app.'**
+  String get appTrackersNone;
+
+  /// No description provided for @appTrackersNotChecked.
+  ///
+  /// In en, this message translates to:
+  /// **'This app has not been checked yet.'**
+  String get appTrackersNotChecked;
+
+  /// No description provided for @appTrackersUnreadable.
+  ///
+  /// In en, this message translates to:
+  /// **'ZT Privacy could not read this app\'s code.'**
+  String get appTrackersUnreadable;
+
+  /// No description provided for @kindAds.
+  ///
+  /// In en, this message translates to:
+  /// **'Advertising'**
+  String get kindAds;
+
+  /// No description provided for @kindAnalytics.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics'**
+  String get kindAnalytics;
+
+  /// No description provided for @kindLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get kindLocation;
+
+  /// No description provided for @kindProfiling.
+  ///
+  /// In en, this message translates to:
+  /// **'Profiling'**
+  String get kindProfiling;
+
+  /// No description provided for @kindIdentification.
+  ///
+  /// In en, this message translates to:
+  /// **'Identification'**
+  String get kindIdentification;
+
+  /// No description provided for @kindCrashReporting.
+  ///
+  /// In en, this message translates to:
+  /// **'Crash reporting'**
+  String get kindCrashReporting;
+
+  /// No description provided for @kindUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Kind not stated'**
+  String get kindUnknown;
+
+  /// No description provided for @trackerAppsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Apps that contain this code'**
+  String get trackerAppsTitle;
+
+  /// No description provided for @trackerNoApps.
+  ///
+  /// In en, this message translates to:
+  /// **'No app on this list contains it now.'**
+  String get trackerNoApps;
+
+  /// No description provided for @trackerReadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Read about it at Exodus Privacy'**
+  String get trackerReadMore;
+
+  /// No description provided for @ruleTrackerCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracker code with permissions'**
+  String get ruleTrackerCode;
+
+  /// No description provided for @findingTrackerCode.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{{app} contains code from 1 tracker and holds sensitive permissions} other{{app} contains code from {count} trackers and holds sensitive permissions}}'**
+  String findingTrackerCode(String app, int count);
+
+  /// No description provided for @whyTrackerCode.
+  ///
+  /// In en, this message translates to:
+  /// **'This app contains code made for advertising, analytics or the like, and it also holds a permission that tells it something about you, such as location, contacts, camera or microphone. Finding the code does not prove that it runs or what it sends. The two together are still worth a look: take away the permissions the app does not need, or look for an app without this code.'**
+  String get whyTrackerCode;
+
+  /// No description provided for @appIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Part of its code could not be read'**
+  String get appIncomplete;
+
+  /// No description provided for @appTrackersIncompleteNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No tracker code was found in the part of this app that could be read. The rest could not be read, so it is not known whether the app is free of it.'**
+  String get appTrackersIncompleteNone;
+
+  /// No description provided for @appTrackersIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Part of this app\'s code could not be read, so there may be more.'**
+  String get appTrackersIncomplete;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

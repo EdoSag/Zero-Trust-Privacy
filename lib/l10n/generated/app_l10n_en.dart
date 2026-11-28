@@ -904,4 +904,157 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get holdersTitle => 'Apps that hold this';
+
+  @override
+  String get trackersTile => 'Trackers';
+
+  @override
+  String get trackersTileWaiting => 'Getting ready…';
+
+  @override
+  String trackersScanning(int done, int total) {
+    return 'Checking apps: $done of $total';
+  }
+
+  @override
+  String trackersTileSub(int count, int apps) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count of your $apps apps contain tracker code',
+      one: '1 of your $apps apps contains tracker code',
+      zero: 'No tracker code found in your $apps apps',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get trackersIntro =>
+      'A tracker is code made to collect data about you or about how you use an app. ZT Privacy reads the names of the code inside each app on this phone and compares them with Exodus Privacy\'s list of known trackers. Nothing is sent anywhere: the list is inside this app.';
+
+  @override
+  String get trackersCaveat =>
+      'This shows that the code is in the app. It does not prove that the code runs, or what it sends. Code whose names were scrambled cannot be seen.';
+
+  @override
+  String trackersCredit(int count, String date) {
+    return 'Tracker list: Exodus Privacy, under the Open Database License (ODbL 1.0). $count trackers, newest entry $date.';
+  }
+
+  @override
+  String get tabByTracker => 'By tracker';
+
+  @override
+  String appTrackerCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Code from $count trackers',
+      one: 'Code from 1 tracker',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get appNoTrackers => 'No tracker code found';
+
+  @override
+  String get appNotChecked => 'Not checked yet';
+
+  @override
+  String get appUnreadable => 'Its code could not be read';
+
+  @override
+  String get noTrackersAnywhere => 'No tracker code was found in these apps.';
+
+  @override
+  String get noTrackersYet => 'No tracker code found so far.';
+
+  @override
+  String trackerInApps(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'In $count apps',
+      one: 'In 1 app',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get appTrackersTitle => 'Tracker code';
+
+  @override
+  String get appTrackersFound => 'Contains code from:';
+
+  @override
+  String get appTrackersNone =>
+      'No code from known trackers was found in this app.';
+
+  @override
+  String get appTrackersNotChecked => 'This app has not been checked yet.';
+
+  @override
+  String get appTrackersUnreadable =>
+      'ZT Privacy could not read this app\'s code.';
+
+  @override
+  String get kindAds => 'Advertising';
+
+  @override
+  String get kindAnalytics => 'Analytics';
+
+  @override
+  String get kindLocation => 'Location';
+
+  @override
+  String get kindProfiling => 'Profiling';
+
+  @override
+  String get kindIdentification => 'Identification';
+
+  @override
+  String get kindCrashReporting => 'Crash reporting';
+
+  @override
+  String get kindUnknown => 'Kind not stated';
+
+  @override
+  String get trackerAppsTitle => 'Apps that contain this code';
+
+  @override
+  String get trackerNoApps => 'No app on this list contains it now.';
+
+  @override
+  String get trackerReadMore => 'Read about it at Exodus Privacy';
+
+  @override
+  String get ruleTrackerCode => 'Tracker code with permissions';
+
+  @override
+  String findingTrackerCode(String app, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$app contains code from $count trackers and holds sensitive permissions',
+      one: '$app contains code from 1 tracker and holds sensitive permissions',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get whyTrackerCode =>
+      'This app contains code made for advertising, analytics or the like, and it also holds a permission that tells it something about you, such as location, contacts, camera or microphone. Finding the code does not prove that it runs or what it sends. The two together are still worth a look: take away the permissions the app does not need, or look for an app without this code.';
+
+  @override
+  String get appIncomplete => 'Part of its code could not be read';
+
+  @override
+  String get appTrackersIncompleteNone =>
+      'No tracker code was found in the part of this app that could be read. The rest could not be read, so it is not known whether the app is free of it.';
+
+  @override
+  String get appTrackersIncomplete =>
+      'Part of this app\'s code could not be read, so there may be more.';
 }
