@@ -46,7 +46,7 @@ dev_dependencies:
     git:
       url: https://github.com/EdoSag/Zero-Trust-Core.git
       path: packages/zt_release_checks
-      ref: b9b9226e5997386da964bc3ef4ad86a8424e3938
+      ref: e7822ddee5116cb64bb27d68c5a144558824e98e
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
