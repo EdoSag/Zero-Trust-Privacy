@@ -1758,6 +1758,78 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Part of this app\'s code could not be read, so there may be more.'**
   String get appTrackersIncomplete;
+
+  /// No description provided for @changesTile.
+  ///
+  /// In en, this message translates to:
+  /// **'What changed'**
+  String get changesTile;
+
+  /// No description provided for @changesTileNew.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 new change since you last looked} other{{count} new changes since you last looked}}'**
+  String changesTileNew(int count);
+
+  /// No description provided for @changesTileNothingNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing new since you last looked'**
+  String get changesTileNothingNew;
+
+  /// No description provided for @changesTileNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing has changed yet'**
+  String get changesTileNone;
+
+  /// No description provided for @changesIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Each time you open ZT Privacy it compares your apps with the last time. A new app that contains tracker code is listed here, and so is an update that brought tracker code or started asking for a sensitive permission. The list is kept on this phone only.'**
+  String get changesIntro;
+
+  /// No description provided for @changesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing has changed since ZT Privacy first looked at this phone.'**
+  String get changesEmpty;
+
+  /// No description provided for @changesNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get changesNew;
+
+  /// No description provided for @changeNewApp.
+  ///
+  /// In en, this message translates to:
+  /// **'{app} was installed. It contains code from: {names}'**
+  String changeNewApp(String app, String names);
+
+  /// No description provided for @changeTrackersAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'An update of {app} added code from: {names}'**
+  String changeTrackersAdded(String app, String names);
+
+  /// No description provided for @changeTrackersRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'An update of {app} removed code from: {names}'**
+  String changeTrackersRemoved(String app, String names);
+
+  /// No description provided for @changePermissionsAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'An update of {app} started asking for: {names}'**
+  String changePermissionsAdded(String app, String names);
+
+  /// No description provided for @changeAppGone.
+  ///
+  /// In en, this message translates to:
+  /// **'{app} is no longer on this phone.'**
+  String changeAppGone(String app);
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

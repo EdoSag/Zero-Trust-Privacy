@@ -9,6 +9,7 @@ import '../rules/checklist.dart';
 import '../rules/score.dart';
 import '../trackers/tracker_providers.dart';
 import 'apps_page.dart';
+import 'changes_page.dart';
 import 'checklist_page.dart';
 import 'score_page.dart';
 import 'settings_page.dart';
@@ -238,6 +239,18 @@ class _Dashboard extends ConsumerWidget {
           onTap: () => push(const TrackersPage()),
         ),
         _Door(
+          key: const Key('home-changes'),
+          icon: Icons.update,
+          title: l.changesTile,
+          subtitle: scan.changes.isEmpty
+              ? l.changesTileNone
+              : scan.unseenChanges > 0
+              ? l.changesTileNew(scan.unseenChanges)
+              : l.changesTileNothingNew,
+          badge: scan.unseenChanges,
+          onTap: () => push(const ChangesPage()),
+        ),
+        _Door(
           key: const Key('home-checklist'),
           icon: Icons.checklist,
           title: l.checklistTile,
@@ -389,6 +402,7 @@ class _Door extends StatelessWidget {
     required this.subtitle,
     required this.onTap,
     this.progress,
+    this.badge = 0,
   });
 
   final IconData icon;
@@ -398,6 +412,9 @@ class _Door extends StatelessWidget {
 
   /// From 0 to 1 while the list behind the door is still being made.
   final double? progress;
+
+  /// A number on the icon: how many new things wait behind the door.
+  final int badge;
 
   @override
   Widget build(BuildContext context) {
@@ -412,7 +429,9 @@ class _Door extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: Icon(icon),
+              leading: badge > 0
+                  ? Badge(label: Text('$badge'), child: Icon(icon))
+                  : Icon(icon),
               title: Text(title),
               subtitle: Text(subtitle),
               onTap: onTap,

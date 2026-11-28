@@ -708,5 +708,71 @@
   "whyTrackerCode": "This app contains code made for advertising, analytics or the like, and it also holds a permission that tells it something about you, such as location, contacts, camera or microphone. Finding the code does not prove that it runs or what it sends. The two together are still worth a look: take away the permissions the app does not need, or look for an app without this code.",
   "appIncomplete": "Part of its code could not be read",
   "appTrackersIncompleteNone": "No tracker code was found in the part of this app that could be read. The rest could not be read, so it is not known whether the app is free of it.",
-  "appTrackersIncomplete": "Part of this app's code could not be read, so there may be more."
+  "appTrackersIncomplete": "Part of this app's code could not be read, so there may be more.",
+  "changesTile": "What changed",
+  "changesTileNew": "{count, plural, =1{1 new change since you last looked} other{{count} new changes since you last looked}}",
+  "@changesTileNew": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "changesTileNothingNew": "Nothing new since you last looked",
+  "changesTileNone": "Nothing has changed yet",
+  "changesIntro": "Each time you open ZT Privacy it compares your apps with the last time. A new app that contains tracker code is listed here, and so is an update that brought tracker code or started asking for a sensitive permission. The list is kept on this phone only.",
+  "changesEmpty": "Nothing has changed since ZT Privacy first looked at this phone.",
+  "changesNew": "New",
+  "changeNewApp": "{app} was installed. It contains code from: {names}",
+  "@changeNewApp": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "changeTrackersAdded": "An update of {app} added code from: {names}",
+  "@changeTrackersAdded": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "changeTrackersRemoved": "An update of {app} removed code from: {names}",
+  "@changeTrackersRemoved": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "changePermissionsAdded": "An update of {app} started asking for: {names}",
+  "@changePermissionsAdded": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "changeAppGone": "{app} is no longer on this phone.",
+  "@changeAppGone": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -33,6 +33,16 @@ const sensitivePermissions = [
   'android.permission.ACTIVITY_RECOGNITION',
 ];
 
+/// The permissions whose arrival in an update is worth telling: the ones
+/// above, and the special accesses an app has to ask for by name.
+const permissionsToWatchFor = [
+  ...sensitivePermissions,
+  allFilesPermission,
+  overlayPermission,
+  installAppsPermission,
+  usageAccessPermission,
+];
+
 const securityPatchMaxAge = Duration(days: 90);
 const unusedAfter = Duration(days: 90);
 const notUpdatedAfter = Duration(days: 730);
