@@ -31,6 +31,14 @@ jobs:
   apk:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    # A throwaway database for the release checks below.
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_PASSWORD: postgres }
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-retries 10
     steps:
       - uses: actions/checkout@v5
 
@@ -121,17 +129,15 @@ jobs:
 
       - run: flutter pub get
 
-      - name: Check the shared core's rules
-        # The suite's full release checks (Zero-Trust-Core,
-        # packages/zt_release_checks) do not know the `privacy` app id yet;
-        # they come with the suite entry. Until then, the one rule that has
-        # locked users out before: cryptography_flutter breaks the core's
-        # key derivation, so it must never be in the build.
-        run: |
-          if grep -q 'cryptography_flutter' pubspec.lock; then
-            echo "::error::cryptography_flutter is in pubspec.lock. It breaks sign-in; remove it."
-            exit 1
-          fi
+      - name: Release checks
+        # Shared by every Zero-Trust app (Zero-Trust-Core,
+        # packages/zt_release_checks): key, sync and sign-in vectors run with
+        # this app's dependencies, app setup (cryptography_flutter, which
+        # breaks sign-in, must never be in the build), and the database
+        # rules of the pinned core plus every table and function this app
+        # calls. A failure here stops the release.
+        env: { PGHOST: localhost, PGUSER: postgres, PGPASSWORD: postgres }
+        run: dart run zt_release_checks --app privacy --database
 
       - name: Analyze and test
         run: |
@@ -182,6 +188,14 @@ jobs:
             echo "BUILD=$BUILD"
             echo "APK=$APK"
           } >> "$GITHUB_ENV"
+
+      - name: No tracker code in our own app
+        # The app that looks for tracker code in other apps must have none
+        # itself. This reads the class names in the APK just built and
+        # compares them with the same Exodus Privacy list the app ships,
+        # by the same rules. A dependency that brings a tracker in fails
+        # the build here, with the tracker's name and where its code sits.
+        run: dart run zt_release_checks:zt_tracker_check "$APK"
 
       - uses: actions/upload-artifact@v4
         with:
