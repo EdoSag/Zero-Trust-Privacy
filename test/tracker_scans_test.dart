@@ -703,6 +703,76 @@ void main() {
       expect(again.state.changes.length, 2);
     });
 
+    test('a clock that was set back leaves nothing new for ever', () async {
+      final cache = MemoryScanCache();
+      var time = noon;
+      final scans = Scans(probe: phoneWith([maps]), cache: cache)
+        ..clock = () => time;
+      await scans.open();
+      scans.instant.found = {
+        'com.game': ['Ad Network'],
+        'com.notes': ['App Stats'],
+      };
+      scans.probe.installed = [maps, game];
+      await scans.readAgain();
+
+      // The clock goes back an hour, and another app arrives.
+      time = noon.subtract(const Duration(hours: 1));
+      scans.probe.installed = [maps, game, notes];
+      await scans.readAgain();
+      expect(scans.state.unseenChanges, 2);
+      // Still newest first, and not dated before the one before it.
+      expect(kinds(scans), [
+        (ChangeKind.newAppTrackers, 'com.notes'),
+        (ChangeKind.newAppTrackers, 'com.game'),
+      ]);
+      expect(scans.state.changes.first.at, noon.millisecondsSinceEpoch);
+
+      scans.container.read(trackerScansProvider.notifier).markChangesSeen();
+      await settle();
+      expect(scans.state.unseenChanges, 0);
+
+      // With the clock still behind the last look, the next one is new.
+      scans.instant.found['com.torch'] = ['Ad Network'];
+      scans.probe.installed = [
+        maps,
+        game,
+        notes,
+        userApp('com.torch', 'Torch'),
+      ];
+      await scans.readAgain();
+      expect(scans.state.unseenChanges, 1);
+      scans.container.read(trackerScansProvider.notifier).markChangesSeen();
+      await settle();
+      expect(scans.state.unseenChanges, 0);
+    });
+
+    test('a list kept out of order is seen whole when it is opened', () async {
+      final cache = MemoryScanCache()
+        ..kept = ScanMemory(
+          listVersion: someTrackers().version,
+          baselined: true,
+          asked: {'com.maps': const []},
+          changes: [
+            for (final at in [500, 300])
+              Change(
+                at: at,
+                kind: ChangeKind.trackersAdded,
+                package: 'com.maps',
+                label: 'Maps',
+                trackerIds: [adNetwork.id],
+              ),
+          ],
+        );
+      final scans = Scans(probe: phoneWith([maps]), cache: cache);
+      await scans.open();
+      expect(scans.state.unseenChanges, 2);
+      scans.container.read(trackerScansProvider.notifier).markChangesSeen();
+      await settle();
+      expect(scans.state.unseenChanges, 0);
+      expect(cache.kept!.seenAt, 500);
+    });
+
     test('only the newest two hundred are kept', () {
       final memory = ScanMemory(listVersion: 'v');
       for (var i = 0; i < 205; i++) {

@@ -257,7 +257,12 @@ class _ScanRun {
   void markSeen() {
     final memory = _memory;
     if (memory == null || _stopped) return;
-    final newest = memory.changes.lastOrNull?.at ?? 0;
+    // The newest by its date, wherever it stands in a list kept by an
+    // older version.
+    var newest = 0;
+    for (final change in memory.changes) {
+      if (change.at > newest) newest = change.at;
+    }
     if (newest <= memory.seenAt) return;
     memory.seenAt = newest;
     _save();
@@ -272,12 +277,17 @@ class _ScanRun {
   }) {
     final memory = _memory;
     if (memory == null) return;
-    final now = clock().millisecondsSinceEpoch;
+    var at = clock().millisecondsSinceEpoch;
+    // The phone's clock may have been set back. A change is never dated at
+    // or before the moment the list was last opened, or it would not show
+    // as new; and never before the change that came before it, or opening
+    // the list would leave that one new for ever.
+    if (at <= memory.seenAt) at = memory.seenAt + 1;
+    final last = memory.changes.lastOrNull?.at ?? 0;
+    if (at < last) at = last;
     memory.addChange(
       Change(
-        // Never at or before the moment the list was last opened, even if
-        // the phone's clock was set back: it would not show as new.
-        at: now > memory.seenAt ? now : memory.seenAt + 1,
+        at: at,
         kind: kind,
         package: app.package,
         label: app.label,
